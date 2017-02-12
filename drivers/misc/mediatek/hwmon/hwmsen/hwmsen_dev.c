@@ -987,9 +987,9 @@ static ssize_t hwmsen_store_trace(struct device* dev,
 		HWM_ERR("set trace level fail!!\n");
 	}
 	return count;
-}
+}                                                      
 /*----------------------------------------------------------------------------*/
-static ssize_t hwmsen_show_sensordevnum(struct device *dev,
+static ssize_t hwmsen_show_sensordevnum(struct device *dev, 
                                   struct device_attribute *attr, char *buf)
 {
 	const char *devname = NULL;
@@ -997,20 +997,12 @@ static ssize_t hwmsen_show_sensordevnum(struct device *dev,
 
 	return snprintf(buf, PAGE_SIZE, "%s\n", devname+5);
 }
-/*----------------------------------------------------------------------------*/
-static ssize_t hwmsen_show_gsensor_name(struct device *dev,
-                                  struct device_attribute *attr, char *buf)
-{
-	return snprintf(buf, sizeof(gsensor_name), "%s\n", gsensor_name);
-}
-
 DEVICE_ATTR(hwmdev,     S_IRUGO, hwmsen_show_hwmdev, NULL);
 DEVICE_ATTR(active,     S_IWUSR | S_IRUGO, hwmsen_show_hwmdev, hwmsen_store_active);
 DEVICE_ATTR(delay,      S_IWUSR | S_IRUGO, hwmsen_show_delay,  hwmsen_store_delay);
 DEVICE_ATTR(wake,       S_IWUSR | S_IRUGO, hwmsen_show_wake,   hwmsen_store_wake);
 DEVICE_ATTR(trace,      S_IWUSR | S_IRUGO, hwmsen_show_trace,  hwmsen_store_trace);
 DEVICE_ATTR(hwmsensordevnum,      S_IRUGO, hwmsen_show_sensordevnum,  NULL);
-DEVICE_ATTR(gsensor_name,      S_IRUGO, hwmsen_show_gsensor_name,  NULL);
 /*----------------------------------------------------------------------------*/
 static struct device_attribute *hwmsen_attr_list[] =
 {
@@ -1020,12 +1012,11 @@ static struct device_attribute *hwmsen_attr_list[] =
 	&dev_attr_wake,
 	&dev_attr_trace,
 	&dev_attr_hwmsensordevnum,
-	&dev_attr_gsensor_name,
 };
 
 
 /*----------------------------------------------------------------------------*/
-static int hwmsen_create_attr(struct device *dev)
+static int hwmsen_create_attr(struct device *dev) 
 {
 	int idx, err = 0;
 	int num = (int)(sizeof(hwmsen_attr_list)/sizeof(hwmsen_attr_list[0]));
@@ -1033,13 +1024,13 @@ static int hwmsen_create_attr(struct device *dev)
 	if(!dev)
 	{
 		return -EINVAL;
-	}
+	}	
 
 	for(idx = 0; idx < num; idx++)
 	{
 		if((err = device_create_file(dev, hwmsen_attr_list[idx])))
-		{
-			HWM_ERR("device_create_file (%s) = %d\n", hwmsen_attr_list[idx]->attr.name, err);
+		{            
+			HWM_ERR("device_create_file (%s) = %d\n", hwmsen_attr_list[idx]->attr.name, err);        
 			break;
 		}
 	}
@@ -1049,7 +1040,7 @@ static int hwmsen_create_attr(struct device *dev)
 /*----------------------------------------------------------------------------*/
 static int hwmsen_delete_attr(struct device *dev)
 {
-
+	
 	int idx ,err = 0;
 	int num = (int)(sizeof(hwmsen_attr_list)/sizeof(hwmsen_attr_list[0]));
     HWM_FUN(f);
@@ -1057,12 +1048,12 @@ static int hwmsen_delete_attr(struct device *dev)
 	{
 		return -EINVAL;
 	}
-
+	
 
 	for (idx = 0; idx < num; idx++)
 	{
 		device_remove_file(dev, hwmsen_attr_list[idx]);
-	}
+	}	
 
 	return err;
 }
@@ -1072,13 +1063,13 @@ static int init_static_data(void)
 {
 	int i = 0;
 //	memset(&obj_data, 0, sizeof(struct hwmsen_data));
-//	obj_data.lock = __MUTEX_INITIALIZER(obj_data.lock);
+//	obj_data.lock = __MUTEX_INITIALIZER(obj_data.lock);	
 	for(i=0; i < MAX_ANDROID_SENSOR_NUM; i++)
 	{
-		//dev_cxt.cxt[i] = NULL;
+		//dev_cxt.cxt[i] = NULL;		
 		memset(&obj_data.sensors_data[i], SENSOR_INVALID_VALUE, sizeof(hwm_sensor_data));
 		obj_data.sensors_data[i].sensor = i;
-
+		
 	}
 	return 0;
 }

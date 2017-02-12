@@ -42,8 +42,6 @@ extern void mtkfb_switch_normal_to_factory(void);
 extern void mtkfb_switch_factory_to_normal(void);
 extern void set_ovlengine_debug_level(int level);
 extern int fb_pattern_en(int enable);
-extern void mtkfb_early_suspend_test();
-extern void mtkfb_late_resume_test();
 
 extern unsigned int gCaptureLayerEnable;
 extern unsigned int gCaptureLayerDownX;
@@ -587,19 +585,15 @@ static void process_dbg_opt(const char *opt)
     {
 	mtkfb_clear_lcm();
     }
-    else if (0 == strncmp(opt, "suspend", 7))
+    else if (0 == strncmp(opt, "suspend", 4))
     {
-        //DISP_PanelEnable(FALSE);
-        //DISP_PowerEnable(FALSE);
-        DISP_LOG_PRINT(ANDROID_LOG_INFO, "DBG", "[mtkfb_dbg] opt=suspend\n");
-        mtkfb_early_suspend_test();
+        DISP_PanelEnable(FALSE);
+        DISP_PowerEnable(FALSE);
     }
-    else if (0 == strncmp(opt, "resume", 6))
+    else if (0 == strncmp(opt, "resume", 4))
     {
-        //DISP_PowerEnable(TRUE);
-        //DISP_PanelEnable(TRUE);
-        DISP_LOG_PRINT(ANDROID_LOG_INFO, "DBG", "[mtkfb_dbg] opt=resume\n");
-        mtkfb_late_resume_test();
+        DISP_PowerEnable(TRUE);
+        DISP_PanelEnable(TRUE);
     }
     else if (0 == strncmp(opt, "lcm:", 4))
     {

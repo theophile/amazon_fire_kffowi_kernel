@@ -56,7 +56,6 @@
 #include <net/netlink.h>
 #include <net/cfg80211.h>
 #include "gl_cfg80211.h"
-#include "gl_p2p_ioctl.h"
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -1320,17 +1319,10 @@ mtk_cfg80211_connect (
         }
     }
 
-	if (sme->channel) {
+	if (sme->channel)
 		rNewSsid.u4CenterFreq = sme->channel->center_freq;
-		rNewSsid.ucSpecificChnl = 1;
-		mtk_p2p_cfg80211func_channel_format_switch(sme->channel,
-			NL80211_CHAN_NO_HT,
-			&rNewSsid.rChannelInfo,
-			&rNewSsid.eChnlSco);
-	} else {
+	else
 		rNewSsid.u4CenterFreq = 0;
-		rNewSsid.ucSpecificChnl = 0;
-	}
 	rNewSsid.pucBssid = sme->bssid;
 	rNewSsid.pucSsid = sme->ssid;
 	rNewSsid.u4SsidLen = sme->ssid_len;

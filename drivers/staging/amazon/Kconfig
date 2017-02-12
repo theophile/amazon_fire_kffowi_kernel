@@ -33,12 +33,6 @@ config AMAZON_SIGN_OF_LIFE_MTK
 	help
           enable the life cycle metrics to log device boot and shutdown information on MTK Platform
 
-config AMAZON_POWEROFF_LOG
-	bool "Long press key power off log"
-	default N
-	help
-	enable Long press key power off log
-
 config MDUMP
         bool "Generic memory dump"
         default n

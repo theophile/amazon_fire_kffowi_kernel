@@ -588,6 +588,7 @@ const struct iw_handler_def wext_handler_def = {
 *                  F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
+extern VOID wlanUpdateChannelTable(P_GLUE_INFO_T prGlueInfo);
 
 /*******************************************************************************
 *                              F U N C T I O N S
@@ -3931,40 +3932,16 @@ wext_set_country (
     aucCountry[0] = *((PUINT_8)iwr->u.data.pointer + 8);
     aucCountry[1] = *((PUINT_8)iwr->u.data.pointer + 9);
 
-	if ('X' == aucCountry[0] && 'X' == aucCountry[1])
-		aucCountry[0] = aucCountry[1] = 'W';
-
-	rStatus = kalIoctl(prGlueInfo,
-			   wlanoidSetCountryCode,
-			   &aucCountry[0],
-			   2,
-			   FALSE,
-			   FALSE,
-			   TRUE,
-			   FALSE,
-			   &u4BufLen);
-	if (rStatus != WLAN_STATUS_SUCCESS)
-		return -1;
-
-	rStatus = kalIoctl(prGlueInfo,
-			   wlanoidUpdatePowerTable,
-			   &aucCountry[0],
-			   2,
-			   FALSE,
-			   FALSE,
-			   TRUE,
-			   FALSE,
-			   &u4BufLen);
-	if (rStatus != WLAN_STATUS_SUCCESS) {
-		DBGLOG(INIT, INFO, ("failed update power table: %c%c\n",
-				    aucCountry[0], aucCountry[1]));
-		return -EINVAL;
-	}
-	/*Indicate channel change notificaiton to wpa_supplicant via cfg80211*/
-	if ('W' == aucCountry[0] && 'W' == aucCountry[1])
-		aucCountry[0] = aucCountry[1] = 'X';
-	wlanRegulatoryHint(&aucCountry[0]);
-
+    rStatus = kalIoctl(prGlueInfo,
+        wlanoidSetCountryCode,
+        &aucCountry[0],
+        2,
+        FALSE,
+        FALSE,
+        TRUE,
+        FALSE,
+        &u4BufLen);
+	wlanUpdateChannelTable(prGlueInfo);	
     return 0;
 }
 
@@ -4267,7 +4244,7 @@ wext_support_ioctl (
 
         ret = wext_get_essid(prDev, NULL, &iwr->u.essid, prExtraBuf);
         if (ret == 0) {
-            if (copy_to_user(iwr->u.essid.pointer, prExtraBuf, IW_ESSID_MAX_SIZE)) {
+            if (copy_to_user(iwr->u.essid.pointer, prExtraBuf, iwr->u.essid.length)) {
                 ret = -EFAULT;
             }
         }

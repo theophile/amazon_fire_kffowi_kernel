@@ -109,14 +109,14 @@ extern int g_platform_boot_mode;
 void BATTERY_SetUSBState(int usb_state_value)
 {
 #if defined(CONFIG_POWER_EXT)
-	battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY_SetUSBState] in FPGA/EVB, no service\n");
+	battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY_SetUSBState] in FPGA/EVB, no service\r\n");
 #else
 	if ((usb_state_value < USB_SUSPEND) || ((usb_state_value > USB_CONFIGURED))) {
 		battery_xlog_printk(BAT_LOG_CRTI,
-				    "[BATTERY] BAT_SetUSBState Fail! Restore to default value\n");
+				    "[BATTERY] BAT_SetUSBState Fail! Restore to default value\r\n");
 		usb_state_value = USB_UNCONFIGURED;
 	} else {
-		battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] BAT_SetUSBState Success! Set %d\n",
+		battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] BAT_SetUSBState Success! Set %d\r\n",
 				    usb_state_value);
 		g_usb_state = usb_state_value;
 	}
@@ -636,7 +636,7 @@ static void set_jeita_charging_current(void)
 
 	if (g_temp_status == TEMP_NEG_10_TO_POS_0) {
 		g_temp_CC_value = CHARGE_CURRENT_200_00_MA;	/* for low temp */
-		battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] JEITA set charging current : %d\n",
+		battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] JEITA set charging current : %d\r\n",
 				    g_temp_CC_value);
 	}
 }
@@ -664,7 +664,7 @@ void select_charging_curret_bcct(void)
 
 kal_uint32 set_bat_charging_current_limit(int current_limit)
 {
-	battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] set_bat_charging_current_limit (%d)\n",
+	battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] set_bat_charging_current_limit (%d)\r\n",
 			    current_limit);
 
 	if (current_limit != -1) {
@@ -720,7 +720,7 @@ kal_uint32 set_bat_charging_current_limit(int current_limit)
 
 void set_bat_sw_cv_charging_current_limit(int current_limit)
 {
-    battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] set_bat_sw_cv_charging_current_limit (%d)\n", current_limit);
+    battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] set_bat_sw_cv_charging_current_limit (%d)\r\n", current_limit);
 
     if(current_limit <= CHARGE_CURRENT_70_00_MA)         ulc_cv_charging_current=CHARGE_CURRENT_0_00_MA;
     else if(current_limit <= CHARGE_CURRENT_200_00_MA)   ulc_cv_charging_current=CHARGE_CURRENT_70_00_MA;
@@ -745,7 +745,7 @@ void set_bat_sw_cv_charging_current_limit(int current_limit)
 void select_charging_curret(void)
 {
 	if (g_ftm_battery_flag) {
-		battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] FTM charging : %d\n",
+		battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] FTM charging : %d\r\n",
 				    charging_level_data[0]);
 		g_temp_CC_value = charging_level_data[0];
 	} else {
@@ -763,7 +763,7 @@ void select_charging_curret(void)
 				}
 
 				battery_xlog_printk(BAT_LOG_CRTI,
-						    "[BATTERY] STANDARD_HOST CC mode charging : %d on %d state\n",
+						    "[BATTERY] STANDARD_HOST CC mode charging : %d on %d state\r\n",
 						    g_temp_CC_value, g_usb_state);
 			}
 #else
@@ -791,7 +791,7 @@ void select_charging_curret(void)
 			g_temp_CC_value = CHARGE_CURRENT_70_00_MA;
 		}
 
-		battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Default CC mode charging : %d\n",
+		battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Default CC mode charging : %d\r\n",
 				    g_temp_CC_value);
 
 #if defined(CONFIG_MTK_JEITA_STANDARD_SUPPORT)
@@ -861,7 +861,7 @@ static void charging_current_calibration(void)
 
 	bat_isense_offset = bat_vol - Vsense;
 
-	battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] bat_vol=%d, Vsense=%d, offset=%d \n",
+	battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] bat_vol=%d, Vsense=%d, offset=%d \r\n",
 			    bat_vol, Vsense, bat_isense_offset);
 #else
 	bat_isense_offset = 0;
@@ -909,7 +909,7 @@ static void pchr_turn_on_charging(void)
 #endif
 	kal_uint32 charging_enable = KAL_TRUE;
 
-	battery_xlog_printk(BAT_LOG_FULL, "[BATTERY] pchr_turn_on_charging()!\n");
+	battery_xlog_printk(BAT_LOG_FULL, "[BATTERY] pchr_turn_on_charging()!\r\n");
 
 	if (BMT_status.bat_charging_state == CHR_ERROR) {
 		battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] Charger Error, turn OFF charging !\n");
@@ -946,7 +946,7 @@ static void pchr_turn_on_charging(void)
 		if (g_temp_CC_value == CHARGE_CURRENT_0_00_MA) {
 			charging_enable = KAL_FALSE;
 			battery_xlog_printk(BAT_LOG_CRTI,
-					"[BATTERY] charging current is set 0mA, turn off charging !\n");
+					"[BATTERY] charging current is set 0mA, turn off charging !\r\n");
 		} else {
 #if defined(CONFIG_MTK_PUMP_EXPRESS_SUPPORT)
 			if(ta_check_ta_control == KAL_FALSE)
@@ -971,7 +971,7 @@ static void pchr_turn_on_charging(void)
 	}
 
 	/* enable/disable charging */
-	battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] pchr_turn_on_charging(), enable =%d \n",
+	battery_xlog_printk(BAT_LOG_CRTI, "[BATTERY] pchr_turn_on_charging(), enable =%d \r\n",
 			    charging_enable);
 	battery_charging_control(CHARGING_CMD_ENABLE, &charging_enable);
 

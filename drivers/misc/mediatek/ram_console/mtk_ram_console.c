@@ -131,6 +131,7 @@ static size_t ram_console_buffer_size;
 
 static DEFINE_SPINLOCK(ram_console_lock);
 
+static atomic_t rc_in_fiq = ATOMIC_INIT(0);
 
 #ifdef __aarch64__
 static void *_memcpy(void *dest, const void *src, size_t count)
@@ -349,6 +350,7 @@ void aee_sram_fiq_save_bin(const char *msg, size_t len)
 		len -= len % 4;
 	}
 
+	atomic_set(&rc_in_fiq, 1);
 
 	while ((delay > 0) && (spin_is_locked(&ram_console_lock))) {
 		udelay(1);
@@ -371,6 +373,8 @@ void aee_sram_fiq_save_bin(const char *msg, size_t len)
 
 void aee_disable_ram_console_write(void)
 {
+	atomic_set(&rc_in_fiq, 1);
+	return;
 }
 
 void aee_sram_fiq_log(const char *msg)
@@ -382,6 +386,7 @@ void aee_sram_fiq_log(const char *msg)
 		return;
 	}
 
+	atomic_set(&rc_in_fiq, 1);
 
 	while ((delay > 0) && (spin_is_locked(&ram_console_lock))) {
 		udelay(1);
@@ -396,6 +401,8 @@ void ram_console_write(struct console *console, const char *s, unsigned int coun
 {
 	unsigned long flags;
 
+	if (atomic_read(&rc_in_fiq))
+		return;
 
 	spin_lock_irqsave(&ram_console_lock, flags);
 
@@ -552,7 +559,7 @@ static int __init ram_console_init(struct ram_console_buffer *buffer, size_t buf
 		buffer->sig = REBOOT_REASON_SIG;
 	}
 	if ((buffer->off_console != 0 && buffer->off_linux + ALIGN(sizeof(struct last_reboot_reason), 64) == buffer->off_console) &&
-		(buffer->size != 0)) {
+		(buffer_size == (buffer->off_console + buffer->size))) {
 		pr_err("ram_console: log size 0x%x, start 0x%x, off_console 0x%x, buffer_size 0x%x\n", buffer->size, buffer->start, buffer->off_console, buffer_size);
 		ram_console_save_old(buffer);
 	} else {

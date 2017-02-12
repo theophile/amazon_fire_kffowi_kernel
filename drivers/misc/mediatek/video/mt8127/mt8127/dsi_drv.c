@@ -529,11 +529,7 @@ void hdmi_dsi_waitnotbusy(void)
     _WaitForEngineNotBusy();
 }
 
-void wait_dsi_engine_notbusy(void)
-{
-	if (wait_event_timeout(_dsi_wait_vm_done_queue, !_IsEngineBusy(), HZ / 10) == 0)
-		pr_err("Wait dsi engine not busy timeout\n");
-}
+
 
 DSI_STATUS DSI_BackupRegisters(void)
 {

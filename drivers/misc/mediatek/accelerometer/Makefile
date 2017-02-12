@@ -54,6 +54,3 @@ endif
 ifeq ($(CONFIG_MTK_BMA056),y)
 obj-y   +=  bma056/
 endif
-ifeq ($(CONFIG_MTK_MC3410),y)
-obj-y   +=  mc3410-new/
-endif

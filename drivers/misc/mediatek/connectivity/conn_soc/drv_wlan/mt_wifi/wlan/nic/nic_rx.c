@@ -1141,7 +1141,7 @@ nicRxFillChksumStatus(
     ASSERT(prSwRfb);
 
     if (prAdapter->u4CSUMFlags != CSUM_NOT_SUPPORTED){
-		    if (u4TcpUdpIpCksStatus & RX_CS_TYPE_IPv4) { // IPv4 packet
+        if (u4TcpUdpIpCksStatus & RX_CS_TYPE_IPv4) { // IPv4 packet
             prSwRfb->aeCSUM[CSUM_TYPE_IPV6] = CSUM_RES_NONE;
             if(u4TcpUdpIpCksStatus & RX_CS_STATUS_IP) { //IP packet csum failed
                 prSwRfb->aeCSUM[CSUM_TYPE_IPV4] = CSUM_RES_FAILED;

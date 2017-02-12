@@ -1335,9 +1335,7 @@ priv_get_int (
 			wlanQueryDebugCode(prGlueInfo->prAdapter);
 
 				kalMemSet(gucBufDbgCode, '.', sizeof(gucBufDbgCode));
-                if (copy_to_user(prIwReqData->data.pointer, gucBufDbgCode,
-				(prIwReqData->data.length < sizeof(gucBufDbgCode)?
-					prIwReqData->data.length:sizeof(gucBufDbgCode)))) {
+                if (copy_to_user(prIwReqData->data.pointer, gucBufDbgCode, prIwReqData->data.length)) {
                      return -EFAULT;
                 }
                 else
@@ -1841,11 +1839,6 @@ priv_get_struct (
         pu4IntBuf = (PUINT_32)prIwReqData->data.pointer;
         prNdisReq = (P_NDIS_TRANSPORT_STRUCT) &aucOidBuf[0];
 
-		if (prIwReqData->data.length > (sizeof(NDIS_TRANSPORT_STRUCT) -
-			OFFSET_OF(NDIS_TRANSPORT_STRUCT, ndisOidContent))) {
-			DBGLOG(REQ, WARN, ("priv_get_struct() length Err!\n"));
-			return -EFAULT;
-		}
         if (copy_from_user(&prNdisReq->ndisOidContent[0],
                 prIwReqData->data.pointer,
                 prIwReqData->data.length)) {
@@ -1869,6 +1862,7 @@ priv_get_struct (
             }
         }
         return 0;
+        break;
     default:
         DBGLOG(REQ, WARN, ("get struct cmd:0x%x\n", u4SubCmd));
         return -EOPNOTSUPP;

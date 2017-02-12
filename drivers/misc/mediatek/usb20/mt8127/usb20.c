@@ -310,30 +310,16 @@ void mt_usb_disconnect(void)
 
 bool usb_cable_connected(void)
 {
-#if CONFIG_akx123_PROJECT
-	int i = 0;
-#endif
 #ifdef FPGA_PLATFORM
 	return true;
 #else
 
 #ifdef CONFIG_USB_MTK_OTG
 	//ALPS00775710
-	int iddig_state = 1;
+    int iddig_state = 1;
 
-	iddig_state = mt_get_gpio_in(GPIO_OTG_IDDIG_EINT_PIN);
-	DBG(0, "iddig_state = %d\n", iddig_state);
-#if CONFIG_akx123_PROJECT
-	for (i=0; i<3; i++) {
-		if (likely(iddig_state)) {
-			break;
-		} else {
-			msleep(50); /* anti-shake */
-			iddig_state = mt_get_gpio_in(GPIO_OTG_IDDIG_EINT_PIN);
-			DBG(0, "iddig_state = %d after sleep 50ms\n", iddig_state);
-		}
-	}
-#endif
+    iddig_state = mt_get_gpio_in(GPIO_OTG_IDDIG_EINT_PIN);
+	DBG(0,"iddig_state = %d\n", iddig_state);
 
 	if(!iddig_state)
 		return false;

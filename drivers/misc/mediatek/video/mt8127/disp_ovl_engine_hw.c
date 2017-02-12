@@ -360,7 +360,7 @@ static void disp_ovl_engine_565_to_888(void *src_va, void *dst_va)
             *d++ = ((src_rgb565 & 0x7E0) >> 3);
             *d++ = ((src_rgb565 & 0xF800) >> 8);
         }
-        s += (ALIGN_TO(xres, disphal_get_fb_alignment()) - xres);
+        //s += (ALIGN_TO(xres, disphal_get_fb_alignment()) - xres);
     }
 	__cpuc_flush_dcache_area(dst_va, ((xres * yres * 3) + 63) & ~63);	/* porting from ariel */
 }

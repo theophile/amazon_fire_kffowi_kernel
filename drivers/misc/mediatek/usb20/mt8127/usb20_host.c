@@ -146,38 +146,23 @@ extern int ep_config_from_table_for_host(struct musb *musb);
 static bool musb_is_host(void)
 {
 	u8 devctl = 0;
-	int iddig_state = 1;
-	bool usb_is_host = 0;
-#if CONFIG_akx123_PROJECT
-	int i = 0;
-#endif
+    int iddig_state = 1;
+    bool usb_is_host = 0;
 
-	DBG(0,"will mask PMIC charger detection\n");
+    DBG(0,"will mask PMIC charger detection\n");
 #ifndef FPGA_PLATFORM
 #ifdef CONFIG_MTK_DUAL_INPUT_CHARGER_SUPPORT
 #ifdef CONFIG_MTK_LOAD_SWITCH_FPF3040
-	pmic_chrdet_int_en(0);
+    pmic_chrdet_int_en(0);
 #endif
 #endif
 #endif
 
-	musb_platform_enable(mtk_musb);
+    musb_platform_enable(mtk_musb);
 
 #ifdef ID_PIN_USE_EX_EINT
-	/* iddig_state = mt_get_gpio_in(GPIO38); */
-	iddig_state = mt_get_gpio_in(GPIO_OTG_IDDIG_EINT_PIN);
+    iddig_state = mt_get_gpio_in(GPIO38);
 	DBG(0,"iddig_state = %d\n", iddig_state);
-#if CONFIG_akx123_PROJECT
-	for (i=0; i<3; i++) {
-		if (likely(iddig_state)) {
-			break;
-		} else {
-			mdelay(delay_time1); /* anti-shake */
-			iddig_state = mt_get_gpio_in(GPIO_OTG_IDDIG_EINT_PIN);
-			DBG(0,"iddig_state = %d after sleep 50ms\n", iddig_state);
-		}
-	}
-#endif
 #else
     iddig_state = 0 ;
     devctl = musb_readb(mtk_musb->mregs,MUSB_DEVCTL);
@@ -371,8 +356,8 @@ out:
 static void mt_usb_ext_iddig_int(void)
 {
     if (!mtk_musb->is_ready) {
-        /* dealy 7 sec if usb function is not ready */
-        schedule_delayed_work(&mtk_musb->id_pin_work,7000*HZ/1000);
+        /* dealy 5 sec if usb function is not ready */
+        schedule_delayed_work(&mtk_musb->id_pin_work,5000*HZ/1000);
     } else {
         schedule_delayed_work(&mtk_musb->id_pin_work,sw_deboun_time*HZ/1000);
     }
@@ -404,13 +389,13 @@ void mt_usb_iddig_int(struct musb *musb)
 void static otg_int_init(void)
 {
 #ifdef ID_PIN_USE_EX_EINT
-	mt_set_gpio_mode(GPIO_OTG_IDDIG_EINT_PIN, GPIO_MODE_00);
-	mt_set_gpio_dir(GPIO_OTG_IDDIG_EINT_PIN, GPIO_DIR_IN);
-	mt_set_gpio_pull_enable(GPIO_OTG_IDDIG_EINT_PIN, GPIO_PULL_ENABLE);
-	mt_set_gpio_pull_select(GPIO_OTG_IDDIG_EINT_PIN, GPIO_PULL_UP);
-	mt_eint_set_sens(49, MT_LEVEL_SENSITIVE);
-	mt_eint_set_hw_debounce(49,64);
-	mt_eint_registration(49, EINTF_TRIGGER_LOW, mt_usb_ext_iddig_int, FALSE);
+    mt_set_gpio_mode(GPIO38, GPIO_MODE_02);
+    mt_set_gpio_dir(GPIO38, GPIO_DIR_IN);
+    mt_set_gpio_pull_enable(GPIO38, GPIO_PULL_ENABLE);
+    mt_set_gpio_pull_select(GPIO38, GPIO_PULL_UP);
+    mt_eint_set_sens(49, MT_LEVEL_SENSITIVE);
+    mt_eint_set_hw_debounce(49,64);
+    mt_eint_registration(49, EINTF_TRIGGER_LOW, mt_usb_ext_iddig_int, FALSE);
 #if 0
 	mt_set_gpio_mode(GPIO_OTG_IDDIG_EINT_PIN, GPIO_OTG_IDDIG_EINT_PIN_M_IDDIG);
 	mt_set_gpio_dir(GPIO_OTG_IDDIG_EINT_PIN, GPIO_DIR_IN);

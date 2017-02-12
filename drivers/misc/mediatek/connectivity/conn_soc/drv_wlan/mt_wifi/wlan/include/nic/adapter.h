@@ -701,10 +701,6 @@ typedef struct _CONNECTION_SETTINGS_T {
 
     UINT_32                         u4FreqInKHz; /* Center frequency */
 
-	BOOLEAN							fgSpecificChnl;
-	RF_CHANNEL_INFO_T				rSpecificRfChnlInfo;
-
-
     /* ATIM windows using for IBSS power saving function */
     UINT_16                         u2AtimWindow;
 

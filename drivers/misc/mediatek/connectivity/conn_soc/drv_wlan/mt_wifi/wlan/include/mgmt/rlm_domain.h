@@ -337,8 +337,6 @@
 #define MIB_REG_DOMAIN_JAPAN            0x40    /* MPHPT (Japan) */
 #define MIB_REG_DOMAIN_OTHER            0x00    /* other */
 
-#define MAX_TX_POWER 63
-#define MIN_TX_POWER (-64)
 
 /*******************************************************************************
 *                             D A T A   T Y P E S
@@ -466,18 +464,6 @@ typedef struct _COUNTRY_CH_SET_T {
     ENUM_CH_SET_UNII_UPPER_T    eUniiUpper;
 } COUNTRY_CH_SET_T, *P_COUNTRY_CH_SET_T;
 
-#if CFG_CUSTOM_REG
-#define REGION_CODE_FCC (((UINT_16) 'U' << 8) | (UINT_16) 'S')  /* US */
-#define REGION_CODE_JP (((UINT_16) 'J' << 8) | (UINT_16) 'P')   /* JP */
-#define REGION_CODE_CE (((UINT_16) 'E' << 8) | (UINT_16) 'U')   /* EU */
-#define REGION_CODE_WW (((UINT_16) 'W' << 8) | (UINT_16) 'W')   /* WW */
-
-struct reg_mapping {
-	UINT_16 country_code;
-	UINT_16 region;
-};
-#endif
-
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -534,11 +520,6 @@ rlmDomainIsLegalChannel (
     ENUM_BAND_T     eBand,
     UINT_8          ucChannel
     );
-
-#if CFG_CUSTOM_REG
-UINT_16 rlm_get_support_country(UINT_16 country);
-UINT_16 rlm_get_region(UINT_16 country);
-#endif
 
 /*******************************************************************************
 *                              F U N C T I O N S

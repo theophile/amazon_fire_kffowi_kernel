@@ -669,9 +669,6 @@
 
 #ifdef CONFIG_IDME
 #include <linux/ctype.h>
-#ifdef CONFIG_OF
-#include <linux/of.h>
-#endif
 #endif
 
 /*******************************************************************************
@@ -690,20 +687,6 @@ spinlock_t g_p2p_lock;
 int g_u4P2PEnding = 0;
 int g_u4P2POnOffing = 0;
 #endif
-
-#ifdef CONFIG_OF
-#define IDME_OF_MAC_ADDR        "/idme/mac_addr"
-#define IDME_OF_WIFI_MFG        "/idme/wifi_mfg"
-#define IDME_OF_BOARD_ID	"/idme/board_id"
-#else
-#define IDME_OF_MAC_ADDR        "/proc/idme/mac_addr"
-#define IDME_OF_WIFI_MFG        "/proc/idme/wifi_mfg"
-#define IDME_OF_BOARD_ID	"/proc/idme/board_id"
-#endif
-#define BOARD_ID_GIZA_STR "0031"
-#define BOARD_ID_BISCUIT_STR "0110"
-#define BOARD_ID_akx123_STR "0037"
-char idme_board_id[16];
 
 
 /*******************************************************************************
@@ -959,211 +942,6 @@ mtk_cfg80211_ais_default_mgmt_stypes[NUM_NL80211_IFTYPES] = {
     }
 };
 
-#if AMZN_PWR_TABLE_ENABLE
-#define COUNTRY_PWR_TBL(_alpha2, \
-			_cck, \
-			_ofdm_bpsk, _ofdm_qpsk, _ofdm_16qam, _ofdm_48m, _ofdm_54m, \
-			_ht20_bpsk, _ht20_qpsk, _ht20_16qam, _ht20_mcs5, _ht20_mcs6, _ht20_mcs7, \
-			_ht40_bpsk, _ht40_qpsk, _ht40_16qam, _ht40_mcs5, _ht40_mcs6, _ht40_mcs7, \
-			_ofdm_bpsk_5g, _ofdm_qpsk_5g, _ofdm_16qam_5g, _ofdm_48m_5g, _ofdm_54m_5g, \
-			_ht20_bpsk_5g, _ht20_qpsk_5g, _ht20_16qam_5g, _ht20_mcs5_5g, _ht20_mcs6_5g, _ht20_mcs7_5g, \
-			_ht40_bpsk_5g, _ht40_qpsk_5g, _ht40_16qam_5g, _ht40_mcs5_5g, _ht40_mcs6_5g, _ht40_mcs7_5g, \
-			_edge_enabled, _edge_cck, _edge_ofdm_20m, _edge_ofdm_40m, \
-			_support_5g, \
-			_edge_enabled_5g, _edge_ofdm_20m_5g, _edge_ofdm_40m_5g) { \
-	.auCountryCode = (_alpha2), \
-	.rTxPwr.cTxPwr2G4Cck = (_cck), \
-	.rTxPwr.cTxPwr2G4OFDM_BPSK = (_ofdm_bpsk), \
-	.rTxPwr.cTxPwr2G4OFDM_QPSK = (_ofdm_qpsk), \
-	.rTxPwr.cTxPwr2G4OFDM_16QAM = (_ofdm_16qam), \
-	.rTxPwr.cTxPwr2G4OFDM_48Mbps = (_ofdm_48m), \
-	.rTxPwr.cTxPwr2G4OFDM_54Mbps = (_ofdm_54m), \
-	.rTxPwr.cTxPwr2G4HT20_BPSK = (_ht20_bpsk), \
-	.rTxPwr.cTxPwr2G4HT20_QPSK = (_ht20_qpsk), \
-	.rTxPwr.cTxPwr2G4HT20_16QAM = (_ht20_16qam), \
-	.rTxPwr.cTxPwr2G4HT20_MCS5 = (_ht20_mcs5), \
-	.rTxPwr.cTxPwr2G4HT20_MCS6 = (_ht20_mcs6), \
-	.rTxPwr.cTxPwr2G4HT20_MCS7 = (_ht20_mcs7), \
-	.rTxPwr.cTxPwr2G4HT40_BPSK = (_ht40_bpsk), \
-	.rTxPwr.cTxPwr2G4HT40_QPSK = (_ht40_qpsk), \
-	.rTxPwr.cTxPwr2G4HT40_16QAM = (_ht40_16qam), \
-	.rTxPwr.cTxPwr2G4HT40_MCS5 = (_ht40_mcs5), \
-	.rTxPwr.cTxPwr2G4HT40_MCS6 = (_ht40_mcs6), \
-	.rTxPwr.cTxPwr2G4HT40_MCS7 = (_ht40_mcs7), \
-	.rTxPwr.cTxPwr5GOFDM_BPSK = (_ofdm_bpsk_5g), \
-	.rTxPwr.cTxPwr5GOFDM_QPSK = (_ofdm_qpsk_5g), \
-	.rTxPwr.cTxPwr5GOFDM_16QAM = (_ofdm_16qam_5g), \
-	.rTxPwr.cTxPwr5GOFDM_48Mbps = (_ofdm_48m_5g), \
-	.rTxPwr.cTxPwr5GOFDM_54Mbps = (_ofdm_54m_5g), \
-	.rTxPwr.cTxPwr5GHT20_BPSK = (_ht20_bpsk_5g), \
-	.rTxPwr.cTxPwr5GHT20_QPSK = (_ht20_qpsk_5g), \
-	.rTxPwr.cTxPwr5GHT20_16QAM = (_ht20_16qam_5g), \
-	.rTxPwr.cTxPwr5GHT20_MCS5 = (_ht20_mcs5_5g), \
-	.rTxPwr.cTxPwr5GHT20_MCS6 = (_ht20_mcs6_5g), \
-	.rTxPwr.cTxPwr5GHT20_MCS7 = (_ht20_mcs7_5g), \
-	.rTxPwr.cTxPwr5GHT40_BPSK = (_ht40_bpsk_5g), \
-	.rTxPwr.cTxPwr5GHT40_QPSK = (_ht40_qpsk_5g), \
-	.rTxPwr.cTxPwr5GHT40_16QAM = (_ht40_16qam_5g), \
-	.rTxPwr.cTxPwr5GHT40_MCS5 = (_ht40_mcs5_5g), \
-	.rTxPwr.cTxPwr5GHT40_MCS6 = (_ht40_mcs6_5g), \
-	.rTxPwr.cTxPwr5GHT40_MCS7 = (_ht40_mcs7_5g), \
-	.ucTxPwrValid = 1, \
-	.r2GBandEdgePwr.fg2G4BandEdgePwrUsed = (_edge_enabled), \
-	.r2GBandEdgePwr.cBandEdgeMaxPwrCCK = (_edge_cck), \
-	.r2GBandEdgePwr.cBandEdgeMaxPwrOFDM20 = (_edge_ofdm_20m), \
-	.r2GBandEdgePwr.cBandEdgeMaxPwrOFDM40 = (_edge_ofdm_40m), \
-	.ucSupport5GBand = (_support_5g), \
-	.r5GBandEdgePwr.uc5GBandEdgePwrUsed = (_edge_enabled_5g), \
-	.r5GBandEdgePwr.c5GBandEdgeMaxPwrOFDM20 = (_edge_ofdm_20m_5g), \
-	.r5GBandEdgePwr.c5GBandEdgeMaxPwrOFDM40 = (_edge_ofdm_40m_5g), \
-}
-
-static COUNTRY_POWER_TABLE asCountryPwrTbl[] = {
-	COUNTRY_PWR_TBL("WW", /* country code */
-			0x1D, /* CCK */
-			0x1C, 0x1C, 0x1C, 0x1C, 0x1C, /* OFDM */
-			0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, /* HT20 */
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* HT40 */
-			0x1E, 0x1E, 0x1E, 0x1E, 0x1E, /* 5G_OFDM */
-			0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, /* 5G_HT20 */
-			0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, /* 5G_HT40 */
-			0x1, 0x1C, 0x1D, 0x00, /* 2.4G band edge */
-			0x1, /* 5G support */
-			0x1, 0x1E, 0x1E), /* 5G band edge */
-	COUNTRY_PWR_TBL("US", /* country code */
-			0x1D, /* CCK */
-			0x1C, 0x1C, 0x1C, 0x1C, 0x1C, /* OFDM */
-			0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, /* HT20 */
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* HT40 */
-			0x1E, 0x1E, 0x1E, 0x1E, 0x1E, /* 5G_OFDM */
-			0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, /* 5G_HT20 */
-			0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, /* 5G_HT40 */
-			0x1, 0x1C, 0x1D, 0x00, /* 2.4G band edge */
-			0x1, /* 5G support */
-			0x1, 0x1E, 0x1E), /* 5G band edge */
-	COUNTRY_PWR_TBL("EU", /* country code */
-			0x1F, /* CCK */
-			0x23, 0x23, 0x23, 0x23, 0x23, /* OFDM */
-			0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, /* HT20 */
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* HT40 */
-			0x1B, 0x1B, 0x1B, 0x1B, 0x1B, /* 5G_OFDM */
-			0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, /* 5G_HT20 */
-			0x21, 0x21, 0x21, 0x21, 0x21, 0x21, /* 5G_HT40 */
-			0x1, 0x1F, 0x1E, 0x00, /* 2.4G band edge */
-			0x1, /* 5G support */
-			0x1, 0x1B, 0x21), /* 5G band edge */
-	COUNTRY_PWR_TBL("JP", /* country code */
-			0x24, /* CCK */
-			0x23, 0x23, 0x23, 0x23, 0x23, /* OFDM */
-			0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, /* HT20 */
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* HT40 */
-			0x21, 0x21, 0x21, 0x21, 0x21, /* 5G_OFDM */
-			0x21, 0x21, 0x21, 0x21, 0x21, 0x21, /* 5G_HT20 */
-			0x21, 0x21, 0x21, 0x21, 0x21, 0x21, /* 5G_HT40 */
-			0x1, 0x24, 0x1F, 0x00, /* 2.4G band edge */
-			0x1, /* 5G support */
-			0x1, 0x21, 0x21), /* 5G band edge */
-};
-
-static COUNTRY_POWER_TABLE power_table_giza[] = {
-	COUNTRY_PWR_TBL("WW", /* country code */
-			0x1C, /* CCK */
-			0x1C, 0x1C, 0x1C, 0x1C, 0x1C, /* OFDM */
-			0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, /* HT20 */
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* HT40 */
-			0x1D, 0x1D, 0x1D, 0x1D, 0x1D, /* 5G_OFDM */
-			0x1D, 0x1D, 0x1D, 0x1D, 0x1D, 0x1B, /* 5G_HT20 */
-			0x1D, 0x1D, 0x1D, 0x1D, 0x1D, 0x1D, /* 5G_HT40 */
-			0x1, 0x26, 0x22, 0x1A, /* 2.4G band edge */
-			0x1, /* 5G support */
-			0x1, 0x22, 0x18), /* 5G band edge */
-	COUNTRY_PWR_TBL("US", /* country code */
-			0x1C, /* CCK */
-			0x1C, 0x1C, 0x1C, 0x1C, 0x1C, /* OFDM */
-			0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, /* HT20 */
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* HT40 */
-			0x1D, 0x1D, 0x1D, 0x1D, 0x1D, /* 5G_OFDM */
-			0x1D, 0x1D, 0x1D, 0x1D, 0x1D, 0x1B, /* 5G_HT20 */
-			0x1D, 0x1D, 0x1D, 0x1D, 0x1D, 0x1D, /* 5G_HT40 */
-			0x1, 0x26, 0x22, 0x1A, /* 2.4G band edge */
-			0x1, /* 5G support */
-			0x1, 0x22, 0x18), /* 5G band edge */
-	COUNTRY_PWR_TBL("EU", /* country code */
-			0x20, /* CCK */
-			0x24, 0x24, 0x24, 0x24, 0x24, /* OFDM */
-			0x20, 0x20, 0x20, 0x20, 0x20, 0x20, /* HT20 */
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* HT40 */
-			0x20, 0x20, 0x20, 0x20, 0x20, /* 5G_OFDM */
-			0x20, 0x20, 0x20, 0x20, 0x20, 0x20, /* 5G_HT20 */
-			0x20, 0x20, 0x20, 0x20, 0x20, 0x20, /* 5G_HT40 */
-			0x1, 0x24, 0x24, 0x00, /* 2.4G band edge */
-			0x1, /* 5G support */
-			0x1, 0x20, 0x20), /* 5G band edge */
-	COUNTRY_PWR_TBL("JP", /* country code */
-			0x24, /* CCK */
-			0x24, 0x24, 0x24, 0x24, 0x24, /* OFDM */
-			0x20, 0x20, 0x20, 0x20, 0x20, 0x20, /* HT20 */
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* HT40 */
-			0x20, 0x20, 0x20, 0x20, 0x20, /* 5G_OFDM */
-			0x20, 0x20, 0x20, 0x20, 0x20, 0x20, /* 5G_HT20 */
-			0x20, 0x20, 0x20, 0x20, 0x20, 0x20, /* 5G_HT40 */
-			0x1, 0x24, 0x24, 0x00, /* 2.4G band edge */
-			0x1, /* 5G support */
-			0x1, 0x20, 0x20), /* 5G band edge */
-};
-
-static COUNTRY_POWER_TABLE power_table_biscuit[] = {
-	COUNTRY_PWR_TBL("WW", /* country code */
-			0x24, /* CCK */
-			0x26, 0x26, 0x26, 0x26, 0x26, /* OFDM */
-			0x24, 0x24, 0x24, 0x24, 0x24, 0x24, /* HT20 */
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* HT40 */
-			0x24, 0x24, 0x24, 0x24, 0x20, /* 5G_OFDM */
-			0x24, 0x24, 0x24, 0x1C, 0x1C, 0x1C, /* 5G_HT20 */
-			0x22, 0x22, 0x22, 0x1C, 0x1C, 0x1C, /* 5G_HT40 */
-			0x1, 0x24, 0x26, 0x0, /* 2.4G band edge */
-			0x1, /* 5G support */
-			0x1, 0x24, 0x1E), /* 5G band edge */
-	COUNTRY_PWR_TBL("US", /* country code */
-			0x2A, /* CCK */
-			0x26, 0x26, 0x26, 0x26, 0x26, /* OFDM */
-			0x24, 0x24, 0x24, 0x24, 0x24, 0x24, /* HT20 */
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* HT40 */
-			0x24, 0x24, 0x24, 0x24, 0x20, /* 5G_OFDM */
-			0x24, 0x24, 0x24, 0x1C, 0x1C, 0x1C, /* 5G_HT20 */
-			0x22, 0x22, 0x22, 0x1C, 0x1C, 0x1C, /* 5G_HT40 */
-			0x1, 0x2A, 0x26, 0x0, /* 2.4G band edge */
-			0x1, /* 5G support */
-			0x1, 0x24, 0x1E), /* 5G band edge */
-	COUNTRY_PWR_TBL("EU", /* country code */
-			0x24, /* CCK */
-			0x26, 0x26, 0x26, 0x26, 0x26, /* OFDM */
-			0x24, 0x24, 0x24, 0x24, 0x24, 0x24, /* HT20 */
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* HT40 */
-			0x24, 0x24, 0x24, 0x24, 0x20, /* 5G_OFDM */
-			0x24, 0x24, 0x24, 0x1C, 0x1C, 0x1C, /* 5G_HT20 */
-			0x22, 0x22, 0x22, 0x1C, 0x1C, 0x1C, /* 5G_HT40 */
-			0x1, 0x24, 0x26, 0x00, /* 2.4G band edge */
-			0x1, /* 5G support */
-			0x0, 0x24, 0x0), /* 5G band edge */
-	COUNTRY_PWR_TBL("JP", /* country code */
-			0x24, /* CCK */
-			0x26, 0x26, 0x26, 0x26, 0x26, /* OFDM */
-			0x24, 0x24, 0x24, 0x24, 0x24, 0x24, /* HT20 */
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* HT40 */
-			0x24, 0x24, 0x24, 0x24, 0x20, /* 5G_OFDM */
-			0x24, 0x24, 0x24, 0x1C, 0x1C, 0x1C, /* 5G_HT20 */
-			0x22, 0x22, 0x22, 0x1C, 0x1C, 0x1C, /* 5G_HT40 */
-			0x1, 0x24, 0x26, 0x00, /* 2.4G band edge */
-			0x1, /* 5G support */
-			0x0, 0x24, 0x0), /* 5G band edge */
-};
-
-struct board_id_power_table_map board_id_power_table_list[] = {
-	{BOARD_ID_GIZA_STR, power_table_giza, ARRAY_SIZE(power_table_giza)},
-	{BOARD_ID_BISCUIT_STR, power_table_biscuit, ARRAY_SIZE(power_table_biscuit)},
-};
-#endif
 
 /*******************************************************************************
 *                                 M A C R O S
@@ -1274,10 +1052,6 @@ glLoadNvram (
                 OFFSET_OF(WIFI_CFG_PARAM_STRUCT, aucCountryCode[0]),
                     (PUINT_16)aucTmp);
 
-		/* cast to wide characters */
-		if ('X' == aucTmp[0] && 'X' == aucTmp[1])
-			aucTmp[0] = aucTmp[1] = 'W';
-
         // cast to wide characters
         prRegInfo->au2CountryCode[0] = (UINT_16) aucTmp[0];
         prRegInfo->au2CountryCode[1] = (UINT_16) aucTmp[1];
@@ -1370,50 +1144,6 @@ glLoadNvram (
     return;
 }
 
-/*----------------------------------------------------------------------------*/
-/*!
- * \brief Update Channel table for cfg80211 for Wi-Fi Direct based on current country code
- *
- * \param[in] prGlueInfo      Pointer to glue info
- *
- * \return   none
- */
-/*----------------------------------------------------------------------------*/
-P_COUNTRY_POWER_TABLE wlanGetUpdatedPowerTable(P_UINT_8 paucCountry)
-{
-#if AMZN_PWR_TABLE_ENABLE
-	UINT_8 i = 0;
-	COUNTRY_POWER_TABLE *country_pwr_tbl = asCountryPwrTbl;
-	int pwr_tbl_size = ARRAY_SIZE(asCountryPwrTbl);
-
-	if (NULL == paucCountry)
-		return NULL;
-
-	DBGLOG(INIT, INFO, ("aucCountry:%c%c\n", paucCountry[0], paucCountry[1]));
-
-	for (i = 0; i < ARRAY_SIZE(board_id_power_table_list); i++) {
-		if (!strncmp(idme_board_id, board_id_power_table_list[i].board_id,
-			     strlen(board_id_power_table_list[i].board_id))) {
-			country_pwr_tbl = board_id_power_table_list[i].power_table;
-			pwr_tbl_size = board_id_power_table_list[i].tbl_size;
-			DBGLOG(INIT, INFO,
-			       ("board_id:%s\n",
-				board_id_power_table_list[i].board_id));
-			break;
-		}
-	}
-
-	for (i = 0; i < pwr_tbl_size; i++) {
-		if (paucCountry[0] == country_pwr_tbl[i].auCountryCode[0] &&
-		    paucCountry[1] == country_pwr_tbl[i].auCountryCode[1])
-			return &country_pwr_tbl[i];
-	}
-
-	return NULL;
-#else
-	return NULL;
-#endif
-}
 
 #if CFG_ENABLE_WIFI_DIRECT
 /*----------------------------------------------------------------------------*/
@@ -1775,7 +1505,6 @@ static struct delayed_work workq;
 static struct net_device *gPrDev;
 static BOOLEAN fgIsWorkMcStart = FALSE;
 static BOOLEAN fgIsWorkMcEverInit = FALSE;
-static struct wireless_dev *gprWdev;
 
 static void
 wlanSetMulticastList (struct net_device *prDev)
@@ -2611,7 +2340,6 @@ wlanNetCreate(
 
     //4 <3.1.2> co-relate with wiphy bi-directionally
     prGlueInfo->prDevHandler->ieee80211_ptr = prWdev;
-	gprWdev = prWdev;
 #if CFG_TCP_IP_CHKSUM_OFFLOAD
     prGlueInfo->prDevHandler->features = NETIF_F_HW_CSUM;
 #endif
@@ -3197,9 +2925,9 @@ static int idme_get_mac_addr(UINT_8 *mac_addr)
 	struct file *f;
 	size_t len;
 
-	f = filp_open(IDME_OF_MAC_ADDR, O_RDONLY, 0);
+	f = filp_open("/proc/idme/mac_addr", O_RDONLY, 0);
 	if (IS_ERR(f)) {
-		DBGLOG(INIT, ERROR, ("(IDME) cannot read %s\n", IDME_OF_MAC_ADDR));
+		DBGLOG(INIT, ERROR, ("(IDME) cannot read /proc/idme/mac_addr\n"));
 		return -1;
 	}
 
@@ -3230,50 +2958,8 @@ bailout:
 	DBGLOG(INIT, ERROR, ("(IDME) wrong mac_addr '%s', expected format 10AE60112233\n", buf));
 	return -1;
 }
-
-static void idme_get_board_id(P_REG_INFO_T prRegInfo)
-{
-#ifdef CONFIG_OF
-	struct device_node *ap;
-	int len;
-
-	ap = of_find_node_by_path(IDME_OF_BOARD_ID);
-	if (likely(ap)) {
-		const char *board_id = of_get_property(ap, "value", &len);
-		if (likely(len >= 16))
-			memcpy(idme_board_id, board_id, sizeof(idme_board_id));
-	}
-#else
-	char board_id[17] = {""};
-	mm_segment_t fs;
-	struct file *f;
-
-	f = filp_open(IDME_OF_BOARD_ID, O_RDONLY, 0);
-	if (IS_ERR(f)) {
-		DBGLOG(INIT, ERROR, ("(IDME) cannot read %s\n", IDME_OF_BOARD_ID));
-		return;
-	}
-
-	fs = get_fs();
-	set_fs(get_ds());
-	f->f_op->read(f, board_id, 16, &f->f_pos);
-	set_fs(fs);
-
-	if (strlen(board_id) == sizeof(idme_board_id))
-		memcpy(idme_board_id, board_id, sizeof(idme_board_id));
-#endif
-}
 #endif
 
-INT_32 wlanRegulatoryHint(PUINT_8 pauCountryCode)
-{
-	if (NULL == gprWdev || NULL == pauCountryCode) {
-		DBGLOG(INIT, WARN, ("gprWdev:0x%p, pauCountryCode:0x%p\n",
-				    gprWdev, pauCountryCode));
-		return -1;
-	}
-	return regulatory_hint(gprWdev->wiphy, pauCountryCode);
-}
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -3421,9 +3107,6 @@ wlanProbe(
             prRegInfo->u4StartAddress = CFG_FW_START_ADDRESS;
             prRegInfo->u4LoadAddress =  CFG_FW_LOAD_ADDRESS;
 
-#ifdef CONFIG_IDME
-			idme_get_board_id(prRegInfo);
-#endif
             // Load NVRAM content to REG_INFO_T
             glLoadNvram(prGlueInfo, prRegInfo);
 #ifdef CONFIG_IDME

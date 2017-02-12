@@ -26,7 +26,6 @@
 #include <linux/io.h>
 #include <asm/uaccess.h>
 #include <linux/sign_of_life.h>
-#include <mach/mt_boot_common.h>
 
 #define DEV_SOL_VERSION     "1.0"
 #define DEV_SOL_PROC_NAME   "life_cycle_reason"
@@ -294,6 +293,9 @@ static int life_cycle_reason_lookup(void)
 		lcr_found = true;
 		break;
 
+	/* do not report the following to catch the potential */
+	/* sudden power loss case */
+#if 0
 	case COLDBOOT_BY_USB:
 		p_dev_sol->life_cycle_reason_idx = COLD_BOOT_BY_USB_CHARGER;
 		lcr_found = true;
@@ -308,11 +310,13 @@ static int life_cycle_reason_lookup(void)
 		p_dev_sol->life_cycle_reason_idx = COLD_BOOT_BY_POWER_SUPPLY;
 		lcr_found = true;
 		break;
-
+#endif
 	default:
 		break;
 	}
 
+	if (lcr_found)
+		return 0;
 
 	/* shutdown reason: normal */
 	switch (shutdown_reason) {
@@ -482,12 +486,7 @@ static int __init dev_sol_init(void)
 	printk(KERN_INFO "%s: life cycle reason is %s\n", __func__, life_cycle_reasons[p_dev_sol->life_cycle_reason_idx]);
 
 	/* clean up the life cycle reason settings */
-	if (get_boot_mode() == KERNEL_POWER_OFF_CHARGING_BOOT || get_boot_mode() == LOW_POWER_OFF_CHARGING_BOOT) {
-		printk(KERN_INFO "%s: in charger mode. Don't reset LCR registers.\n", __func__);
-	} else {
-		printk(KERN_INFO "%s: not in charger mode. Reset LCR registers.\n", __func__);
-		p_dev_sol->sol_ops.lcr_reset();
-	}
+	p_dev_sol->sol_ops.lcr_reset();
 
 	return 0;
 }

@@ -444,7 +444,7 @@ static void accdet_eint_work_callback(struct work_struct *work)
 			accdet_auxadc_switch(0);
 			accdet_adc = (arr[4] + arr[5] + arr[6] + arr[7])/4;
 			ACCDET_DEBUG("accdet_voltage = %d mv, board_voltage = %d mv\n", accdet_adc, board_voltage);
-			#if defined(CONFIG_akx123_PROJECT)
+			if (board_voltage > 570) {
 				if (accdet_adc > 550) {
 					ACCDET_DEBUG("[Accdet] ctia headset!!!\n");
 					mt_set_gpio_out(GPIO_HEADSET_SWITCH1, GPIO_OUT_ZERO);
@@ -454,23 +454,11 @@ static void accdet_eint_work_callback(struct work_struct *work)
 					mt_set_gpio_out(GPIO_HEADSET_SWITCH1, GPIO_OUT_ONE);
 					mt_set_gpio_out(GPIO_HEADSET_SWITCH2, GPIO_OUT_ZERO);
 				}
-			#else
-				if (board_voltage > 570) {
-					if (accdet_adc > 550) {
-						ACCDET_DEBUG("[Accdet] ctia headset!!!\n");
-						mt_set_gpio_out(GPIO_HEADSET_SWITCH1, GPIO_OUT_ZERO);
-						mt_set_gpio_out(GPIO_HEADSET_SWITCH2, GPIO_OUT_ONE);
-					} else {
-						ACCDET_DEBUG("[Accdet] omtp headset!!!\n");
-						mt_set_gpio_out(GPIO_HEADSET_SWITCH1, GPIO_OUT_ONE);
-						mt_set_gpio_out(GPIO_HEADSET_SWITCH2, GPIO_OUT_ZERO);
-					}
-				} else {
-					ACCDET_DEBUG("[Accdet] ---HVT EVT1.0 board--- ctia headset!!!\n");
-					mt_set_gpio_out(GPIO_HEADSET_SWITCH1, GPIO_OUT_ZERO);
-					mt_set_gpio_out(GPIO_HEADSET_SWITCH2, GPIO_OUT_ONE);
-				}
-			#endif
+			} else {
+				ACCDET_DEBUG("[Accdet] ---HVT EVT1.0 board--- ctia headset!!!\n");
+				mt_set_gpio_out(GPIO_HEADSET_SWITCH1, GPIO_OUT_ZERO);
+				mt_set_gpio_out(GPIO_HEADSET_SWITCH2, GPIO_OUT_ONE);
+			}
 		#endif
     } else {
 //EINT_PIN_PLUG_OUT
@@ -655,30 +643,11 @@ static DEFINE_MUTEX(accdet_multikey_mutex);
 #define UP_KEY_THR_1       (100) /*100mv*/
 #define MD_KEY_THR_1		 (0)
 
-#if defined(CONFIG_akx123_PROJECT)
+
 static int key_check(int b)
 {
 	/*ACCDET_DEBUG("adc_data: %d v\n",b);*/
-
-	ACCDET_DEBUG("accdet: come in key_check!!\n");
-	if ((b < DW_KEY_HIGH_THR_1) && (b >= DW_KEY_THR_1)) {
-		ACCDET_DEBUG("adc_data: %d mv\n", b);
-		return DW_KEY;
-	} else if ((b < DW_KEY_THR_1) && (b >= UP_KEY_THR_1)) {
-		ACCDET_DEBUG("adc_data: %d mv\n", b);
-		return UP_KEY;
-	} else if ((b < UP_KEY_THR_1) && (b >= MD_KEY_THR_1)) {
-		ACCDET_DEBUG("adc_data: %d mv\n", b);
-		return MD_KEY;
-	}
-	ACCDET_DEBUG("accdet: leave key_check!!\n");
-	return NO_KEY;
-}
-#else
-static int key_check(int b)
-{
-	/*ACCDET_DEBUG("adc_data: %d v\n",b);*/
-
+	
 	/* 0.24V ~ */
 	if (board_voltage > 570) /*Board EVT1.2*/
 	{
@@ -711,7 +680,6 @@ static int key_check(int b)
 		return NO_KEY;
 	}
 }
-#endif
 
 static void send_key_event(int keycode,int flag)
 {

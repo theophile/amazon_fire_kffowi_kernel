@@ -1957,8 +1957,6 @@ wlanoidSetConnect(
 	} else
 		DBGLOG(INIT, TRACE, ("No Bssid set\n"));
 	prConnSettings->u4FreqInKHz = pParamConn->u4CenterFreq;
-	prConnSettings->fgSpecificChnl = ((pParamConn->ucSpecificChnl == 0) ? FALSE : TRUE);
-	kalMemCopy(&prConnSettings->rSpecificRfChnlInfo, &pParamConn->rChannelInfo, sizeof(RF_CHANNEL_INFO_T));
 
     // prepare for CMD_BUILD_CONNECTION & CMD_GET_CONNECTION_STATUS
     // re-association check
@@ -7699,14 +7697,14 @@ wlanoidSetDisassociate (
             (P_MSG_HDR_T) prAisAbortMsg,
             MSG_SEND_METHOD_BUF);
 
-	/* indicate for disconnection */
-	if (kalGetMediaStateIndicated(prAdapter->prGlueInfo) == PARAM_MEDIA_STATE_CONNECTED) {
+    /* indicate for disconnection */
+    if (kalGetMediaStateIndicated(prAdapter->prGlueInfo) == PARAM_MEDIA_STATE_CONNECTED) {
 		DBGLOG(INIT, TRACE, ("DisByOid\n"));
-		kalIndicateStatusAndComplete(prAdapter->prGlueInfo,
-			WLAN_STATUS_MEDIA_DISCONNECT,
-			NULL,
-			0);
-	}
+        kalIndicateStatusAndComplete(prAdapter->prGlueInfo,
+                WLAN_STATUS_MEDIA_DISCONNECT_LOCALLY,
+                NULL,
+                0);
+    }
 
 #if !defined(LINUX)
     prAdapter->fgIsRadioOff = TRUE;
@@ -10547,33 +10545,29 @@ wlanoidQueryEepromType(
 */
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS
-wlanoidSetCountryCode(IN P_ADAPTER_T prAdapter,
-		      IN PVOID pvSetBuffer,
-		      IN UINT_32 u4SetBufferLen,
-		      OUT PUINT_32 pu4SetInfoLen)
+wlanoidSetCountryCode (
+    IN P_ADAPTER_T  prAdapter,
+    IN  PVOID       pvSetBuffer,
+    IN  UINT_32     u4SetBufferLen,
+    OUT PUINT_32    pu4SetInfoLen
+    )
 {
-	PUINT_8 pucCountry;
-	UINT_16 country;
+    PUINT_8         pucCountry;
 
-	ASSERT(prAdapter);
-	ASSERT(pvSetBuffer);
-	ASSERT(u4SetBufferLen == 2);
+    ASSERT(prAdapter);
+    ASSERT(pvSetBuffer);
+    ASSERT(u4SetBufferLen == 2);
 
-	*pu4SetInfoLen = 2;
+    *pu4SetInfoLen = 2;
 
-	pucCountry = pvSetBuffer;
+    pucCountry = pvSetBuffer;
 
-	country = (((UINT_16) pucCountry[0]) << 8) | ((UINT_16) pucCountry[1]);
-#if CFG_CUSTOM_REG
-	country = rlm_get_support_country(country);
-#endif
-	prAdapter->rWifiVar.rConnSettings.u2CountryCode = country;
+    prAdapter->rWifiVar.rConnSettings.u2CountryCode =
+        (((UINT_16) pucCountry[0]) << 8) | ((UINT_16) pucCountry[1]) ;
 
-	rlmDomainSendCmd(prAdapter, TRUE);
+    rlmDomainSendCmd(prAdapter, TRUE);
 
-	wlanUpdateChannelTable(prAdapter->prGlueInfo);
-
-	return WLAN_STATUS_SUCCESS;
+    return WLAN_STATUS_SUCCESS;
 }
 
 #if 0
@@ -10736,119 +10730,6 @@ wlanoidSetUApsdParam (
             );
 }
 #endif
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief This routine is called to set specified power table to fw if exists.
-*
-* \param[in] prAdapter Pointer to the Adapter structure.
-* \param[in] pvSetBuffer A pointer to the buffer that holds the data to be set.
-* \param[in] u4SetBufferLen The length of the set buffer.
-* \param[out] pu4SetInfoLen If the call is successful, returns the number of
-*                           bytes read from the set buffer. If the call failed
-*                           due to invalid length of the set buffer, returns
-*                           the amount of storage needed.
-*
-* \retval WLAN_STATUS_SUCCESS
-* \retval WLAN_STATUS_FAILURE
-*/
-/*----------------------------------------------------------------------------*/
-WLAN_STATUS
-wlanoidUpdatePowerTable(IN P_ADAPTER_T prAdapter,
-		      IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen)
-{
-	PUINT_8 pucCountry;
-	P_COUNTRY_POWER_TABLE pCountryPwrTable = NULL;
-	UINT_16 region = 0, country = 0;
-	pucCountry = pvSetBuffer;
-
-	/* convert country code to region code. */
-	country = (((UINT_16) pucCountry[0]) << 8) | ((UINT_16) pucCountry[1]);
-#if CFG_CUSTOM_REG
-	region = rlm_get_region(country);
-#else
-	region = country;
-#endif
-	region = ((UINT_16)((((UINT_16)(region) & 0x00FF) << 8) |
-			(((UINT_16)(region) & 0xFF00) >> 8)));
-
-	/*update specified power and band edge power if used to firmware*/
-	pCountryPwrTable = wlanGetUpdatedPowerTable((PUINT_8)&region);
-
-	if (pCountryPwrTable != NULL) {
-		CMD_EDGE_TXPWR_LIMIT_T rCmdEdgeTxPwrLimit;
-		DBGLOG(INIT, INFO, ("updated power table found\n"));
-		/*set CMD_ID_SET_EDGE_TXPWR_LIMIT to chip*/
-		if (0 != pCountryPwrTable->r2GBandEdgePwr.fg2G4BandEdgePwrUsed) {
-			rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrCCK =
-				pCountryPwrTable->r2GBandEdgePwr.cBandEdgeMaxPwrCCK;
-			rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrOFDM20 =
-				pCountryPwrTable->r2GBandEdgePwr.cBandEdgeMaxPwrOFDM20;
-			rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrOFDM40 =
-				pCountryPwrTable->r2GBandEdgePwr.cBandEdgeMaxPwrOFDM40;
-		} else {
-			rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrCCK = MAX_TX_POWER;
-			rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrOFDM20 = MAX_TX_POWER;
-			rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrOFDM40 = MAX_TX_POWER;
-		}
-
-		wlanSendSetQueryCmd(prAdapter,
-				    CMD_ID_SET_EDGE_TXPWR_LIMIT,
-				    TRUE,
-				    FALSE,
-				    FALSE,
-				    NULL,
-				    NULL,
-				    sizeof(CMD_EDGE_TXPWR_LIMIT_T),
-				    (PUINT_8) &rCmdEdgeTxPwrLimit,
-				    NULL,
-				    0);
-
-		/*set CMD_ID_SET_EDGE_TXPWR_LIMIT_5G to chip*/
-		if (pCountryPwrTable->r5GBandEdgePwr.uc5GBandEdgePwrUsed != 0 &&
-		    pCountryPwrTable->ucSupport5GBand != 0) {
-			rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrCCK = 0;
-			rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrOFDM20 =
-				pCountryPwrTable->r5GBandEdgePwr.c5GBandEdgeMaxPwrOFDM20;
-			rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrOFDM40 =
-				pCountryPwrTable->r5GBandEdgePwr.c5GBandEdgeMaxPwrOFDM40;
-		} else {
-			rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrCCK = 0;
-			rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrOFDM20 = MAX_TX_POWER;
-			rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrOFDM40 = MAX_TX_POWER;
-		}
-
-		wlanSendSetQueryCmd(prAdapter,
-				    CMD_ID_SET_5G_EDGE_TXPWR_LIMIT,
-				    TRUE,
-				    FALSE,
-				    FALSE,
-				    NULL,
-				    NULL,
-				    sizeof(CMD_EDGE_TXPWR_LIMIT_T),
-				    (PUINT_8) &rCmdEdgeTxPwrLimit,
-				    NULL,
-				    0);
-
-		/*set CMD_ID_SET_TX_PWR to chip*/
-		if (pCountryPwrTable->ucTxPwrValid != 0)
-			wlanSendSetQueryCmd(prAdapter,
-				   CMD_ID_SET_TX_PWR,
-				   TRUE,
-				   FALSE,
-				   FALSE,
-				   NULL,
-				   NULL,
-				   sizeof(CMD_TX_PWR_T),
-				   (PUINT_8) (&pCountryPwrTable->rTxPwr),
-				   NULL,
-				   0);
-	} else {
-		/*no special power table found*/
-		DBGLOG(INIT, INFO, ("no updated power table found\n"));
-	}
-	return WLAN_STATUS_SUCCESS;
-}
 
 /*----------------------------------------------------------------------------*/
 /*!

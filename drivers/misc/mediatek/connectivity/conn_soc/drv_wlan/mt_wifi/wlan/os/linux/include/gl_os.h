@@ -1069,21 +1069,6 @@ struct wpa_driver_hs20_data_s {
 
 #endif
 
-typedef struct _COUNTRY_POWER_TABLE {
-	UINT_8 auCountryCode[2];	/* ISO/IEC 3166-1 two-character country codes  */
-	TX_PWR_PARAM_T rTxPwr;
-	UINT_8 ucTxPwrValid;
-	BANDEDGE_2G_T r2GBandEdgePwr;
-	UINT_8 ucSupport5GBand;
-	BANDEDGE_5G_T r5GBandEdgePwr;
-} COUNTRY_POWER_TABLE, *P_COUNTRY_POWER_TABLE;
-
-struct board_id_power_table_map {
-	char board_id[5];
-	COUNTRY_POWER_TABLE *power_table;
-	int tbl_size;
-};
-
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -1303,8 +1288,7 @@ p2pSetMulticastListWorkQueueWrapper(
     P_GLUE_INFO_T prGlueInfo
     );
 
-INT_32 wlanRegulatoryHint(PUINT_8 uCountryCode);
-P_COUNTRY_POWER_TABLE wlanGetUpdatedPowerTable(P_UINT_8 paucCountry);
+
 
 #endif
 

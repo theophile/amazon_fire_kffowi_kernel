@@ -949,7 +949,6 @@
 #define CFG_SUPPORT_STATISTICS		1
 #define CFG_SUPPORT_DBG_POWERMODE	1	/* for debugging power always active mode */
 
-#define AMZN_PWR_TABLE_ENABLE 0 /* amazon specified power table setup enable flag */
 
 /*------------------------------------------------------------------------------
  * SLT Option
@@ -1567,11 +1566,6 @@
  */
 #define CFG_SUPPORT_WAKEUP_STATISTICS 1
 
-/*------------------------------------------------------------------------------
- * Flags of custom region domain
- *------------------------------------------------------------------------------
- */
-#define CFG_CUSTOM_REG 1
 
 /*******************************************************************************
 *                             D A T A   T Y P E S

@@ -42,12 +42,7 @@
 	KEY_ENDCALL, KEY_POWER,	\
 }
 
-#ifdef CONFIG_MTK_HALL_SENSOR
-#define KPD_HAS_SLIDE_QWERTY    KPD_YES
-#else
-#define KPD_HAS_SLIDE_QWERTY    KPD_No
-#endif
-
+#define KPD_HAS_SLIDE_QWERTY	KPD_NO
 #if 0
 static inline bool powerOn_slidePin_interface() {
 	return hwPowerOn(MT65XX_POWER_LDO_VCAM_IO, VOL_2800, "Qwerty slide");

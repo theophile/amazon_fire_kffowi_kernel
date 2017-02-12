@@ -150,25 +150,6 @@ static unsigned long timer_pos = 0;
 static struct hrtimer long_press_pwrkey_shutdown_timer;
 #define LONG_PRESS_PWRKEY_SHUTDOWN_TIME		(8)	/* 8sec */
 
-#ifdef CONFIG_AMAZON_POWEROFF_LOG
-static void log_long_press_power_key(void)
-{
-	int rc;
-	char *argv[] = {
-		"/sbin/crashreport",
-		"long_press_power_key",
-		NULL
-	};
-
-	rc = call_usermodehelper(argv[0], argv, NULL, UMH_WAIT_EXEC);
-
-	if (rc < 0)
-		pr_err("call /sbin/crashreport failed, rc = %d\n", rc);
-
-	msleep(2000); /* 2s */
-}
-#endif /* CONFIG_AMAZON_POWEROFF_LOG */
-
 //==============================================================================
 // PMIC lock/unlock APIs
 //==============================================================================
@@ -599,9 +580,6 @@ static void deferred_restart(struct work_struct *dummy)
 	mutex_lock(&pmic_mutex);
 
 	pr_info("Long key press power off\n");
-#ifdef CONFIG_AMAZON_POWEROFF_LOG
-        log_long_press_power_key();
-#endif /* CONFIG_AMAZON_POWEROFF_LOG */
 	sys_sync();
 	rtc_mark_enter_lprst();  /* for metrics */
 	rtc_mark_enter_sw_lprst(); /* for long press power off */

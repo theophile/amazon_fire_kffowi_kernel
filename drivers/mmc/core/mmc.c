@@ -23,7 +23,7 @@
 #include "mmc_ops.h"
 #include "sd_ops.h"
 
-#if (defined(CONFIG_AMAZON_METRICS_LOG) && defined(ENABLE_SAMSUNG_EMMC_METRICS))
+#ifdef CONFIG_AMAZON_METRICS_LOG
 #include <linux/metricslog.h>
 #define LMK_METRIC_TAG "kernel"
 #define METRICS_samsung_data_LEN 128
@@ -931,7 +931,7 @@ err:
 	return err;
 }
 
-#if (defined(CONFIG_AMAZON_METRICS_LOG) && defined(ENABLE_SAMSUNG_EMMC_METRICS))
+#ifdef CONFIG_AMAZON_METRICS_LOG
 static int emmcmetrics_read(struct mmc_host *host)
 {
 	int err = -1;
@@ -1945,7 +1945,7 @@ int mmc_attach_mmc(struct mmc_host *host)
 	if (err)
 		goto err;
 
-#if (defined(CONFIG_AMAZON_METRICS_LOG) && defined(ENABLE_SAMSUNG_EMMC_METRICS))
+#ifdef CONFIG_AMAZON_METRICS_LOG
 	metrics_delaywork_queue(host);
 #endif /* CONFIG_AMAZON_METRICS_LOG */
 

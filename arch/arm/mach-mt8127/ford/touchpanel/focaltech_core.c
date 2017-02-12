@@ -217,8 +217,6 @@ static int p_point_num;
 static u8 buf_addr[2] = { 0 };
 static u8 buf_value[2] = { 0 };
 
-unsigned char ft_vendor_id = 0;
-
 /*******************************************************************************
 * 5.Global variable or extern global variabls/functions
 *******************************************************************************/
@@ -578,7 +576,7 @@ static void tpd_down(int x, int y, int p)
 	input_report_abs(tpd->dev, ABS_MT_PRESSURE, 0x3f);
 	input_report_abs(tpd->dev, ABS_MT_POSITION_X, x);
 	input_report_abs(tpd->dev, ABS_MT_POSITION_Y, y);
-	/*printk("tpd:D[%4d %4d %4d] ", x, y, p);*/
+	printk("tpd:D[%4d %4d %4d] ", x, y, p);
 	/*track id Start 0*/
 	/*input_report_abs(tpd->dev, ABS_MT_TRACKING_ID, p); */
 	input_mt_sync(tpd->dev);
@@ -1108,7 +1106,7 @@ static int touch_event_handler(void *unused)
 #else
 		{
 			if (tpd_touchinfo(&cinfo, &pinfo)) {
-				/*printk("tpd point_num = %d\n", point_num);*/
+				printk("tpd point_num = %d\n", point_num);
 				TPD_DEBUG_SET_TIME;
 				if (point_num > 0) {
 					/*only support 3 point*/
@@ -1303,7 +1301,6 @@ static int __devinit tpd_probe(struct i2c_client *client,
 	uc_reg_addr = FTS_REG_VENDOR_ID;
 	fts_i2c_write(fts_i2c_client, &uc_reg_addr, 1);
 	fts_i2c_read(fts_i2c_client, &uc_reg_addr, 0, &uc_reg_value, 1);
-	ft_vendor_id = uc_reg_value;
 	printk("mtk_tpd[FTS] Vendor id is %x.\n", uc_reg_value);
 
 	uc_reg_addr = FTS_REG_CHIP_ID;

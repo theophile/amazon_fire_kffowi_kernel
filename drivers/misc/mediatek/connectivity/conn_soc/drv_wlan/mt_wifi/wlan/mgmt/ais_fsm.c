@@ -1070,10 +1070,7 @@ aisInitializeConnectionSettings (
 
     prConnSettings->fgIsScanReqIssued = FALSE;
 
-	prConnSettings->fgSpecificChnl = FALSE;
-	kalMemZero(&prConnSettings->rSpecificRfChnlInfo, sizeof(RF_CHANNEL_INFO_T));
-	
-	/* MIB attributes */
+    /* MIB attributes */
     prConnSettings->u2BeaconPeriod = DOT11_BEACON_PERIOD_DEFAULT;
 
     prConnSettings->u2RTSThreshold = DOT11_RTS_THRESHOLD_DEFAULT;
@@ -2333,16 +2330,8 @@ aisFsmSteps (
                     = eBand;;
                 prScanReqMsg->arChnlInfoList[0].ucChannelNum
                     = ucChannel;
-			} else if (prConnSettings->fgSpecificChnl) {
-				prScanReqMsg->eScanChannel = SCAN_CHANNEL_SPECIFIED;
-				prScanReqMsg->ucChannelListNum = 1;
-				kalMemCopy(&prScanReqMsg->arChnlInfoList[0],
-					&prConnSettings->rSpecificRfChnlInfo,
-					sizeof(RF_CHANNEL_INFO_T));
-				prScanReqMsg->u2ChannelDwellTime = SCAN_ONE_CHNL_DEFAULT_DWELL_TIME;
-				/* Disable specific channel scan when connection retry fail */
-				prConnSettings->fgSpecificChnl = FALSE;
-			} else if(prAdapter->aePreferBand[NETWORK_TYPE_AIS_INDEX] == BAND_NULL) {
+            }
+            else if(prAdapter->aePreferBand[NETWORK_TYPE_AIS_INDEX] == BAND_NULL) {
                 if(prAdapter->fgEnable5GBand == TRUE) {
                     prScanReqMsg->eScanChannel      = SCAN_CHANNEL_FULL;
                 }

@@ -213,7 +213,6 @@ extern kal_uint32 bq24296_get_system_status(void);
 extern kal_uint32 bq24296_get_vbus_stat(void);
 extern kal_uint32 bq24296_get_chrg_stat(void);
 extern kal_uint32 bq24296_get_vsys_stat(void);
-extern kal_bool bq24296_is_found;
 //---------------------------------------------------------
 extern void bq24296_dump_register(void);
 extern kal_uint32 bq24296_read_interface (kal_uint8 RegNum, kal_uint8 *val, kal_uint8 MASK, kal_uint8 SHIFT);

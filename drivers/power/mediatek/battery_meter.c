@@ -33,11 +33,7 @@
 #include <mach/battery_meter.h>
 #include <mach/battery_meter_hal.h>
 #include "cust_battery_meter.h"
-#ifdef CONFIG_akx123_PROJECT
-#include "cust_battery_meter_table_akx123.h"
-#else
 #include "cust_battery_meter_table.h"
-#endif
 #include "cust_pmic.h"
 #include "mach/mtk_rtc.h"
 
@@ -244,15 +240,9 @@ extern char* saved_command_line;
 
 #define MTK_MULTI_BAT_PROFILE_SUPPORT
 #define MTK_GET_BATTERY_ID_BY_AUXADC
-#ifdef CONFIG_akx123_PROJECT
-#define ADC_BOARD_ID	(13)
-#define TOTAL_BATTERY_NUMBER 2
-kal_int32 g_battery_id_voltage[] = {200, 500};/*0~0.2V ATL; 0.2v~5V XWD*/
-#else
 #define ADC_BOARD_ID	(15)
 #define TOTAL_BATTERY_NUMBER 2
 kal_int32 g_battery_id_voltage[] = {570, 2000};/*0~0.57v HVT EVT1.1 ; 0.57v~2v EVT1.2 DVT PVT*/
-#endif
 
 
 #ifdef MTK_MULTI_BAT_PROFILE_SUPPORT

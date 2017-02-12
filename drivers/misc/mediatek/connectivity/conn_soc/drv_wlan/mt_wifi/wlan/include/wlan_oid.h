@@ -365,9 +365,6 @@ typedef struct _PARAM_CONNECT_T {
     UINT_8   *pucSsid;
 	UINT_8	 *pucBssid;
 	UINT_32  u4CenterFreq;
-	UINT_8 ucSpecificChnl;
-	RF_CHANNEL_INFO_T rChannelInfo;
-	ENUM_CHNL_EXT_T eChnlSco;
 } PARAM_CONNECT_T, *P_PARAM_CONNECT_T;
 
 /* This is enum defined for user to select an AdHoc Mode */
@@ -2030,12 +2027,6 @@ wlanoidSetCountryCode (
     );
 
 WLAN_STATUS
-wlanoidUpdatePowerTable(IN P_ADAPTER_T prAdapter,
-			IN PVOID pvSetBuffer,
-			IN UINT_32 u4SetBufferLen,
-			OUT PUINT_32 pu4SetInfoLen);
-
-WLAN_STATUS
 wlanSendMemDumpCmd (
     IN P_ADAPTER_T  prAdapter,
     IN PVOID        pvQueryBuffer,
@@ -2209,8 +2200,6 @@ wlanoidSetRoamingInfo (
     IN  UINT_32  u4QueryBufferLen,
     OUT PUINT_32 pu4QueryInfoLen
     );
-
-extern VOID wlanUpdateChannelTable(P_GLUE_INFO_T prGlueInfo);
 
 /*******************************************************************************
 *                              F U N C T I O N S

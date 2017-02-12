@@ -5133,30 +5133,6 @@ static VOID wlanChangeNvram6620to6628(PUINT_8 pucEFUSE){
 }
 #endif
 
-ENUM_BAND_EDGE_CERT_T getBandEdgeCert(P_ADAPTER_T prAdapter)
-{
-	P_DOMAIN_INFO_ENTRY prDomainInfo;
-	P_DOMAIN_SUBBAND_INFO prSubband;
-	UINT32 i;
-
-	prDomainInfo = rlmDomainGetDomainInfo(prAdapter);
-	ASSERT(prDomainInfo);
-
-	for (i = 0; i < MAX_SUBBAND_NUM; i++) {
-		prSubband = &prDomainInfo->rSubBand[i];
-
-		if (prSubband->ucBand == BAND_2G4) {
-			if (prSubband->ucFirstChannelNum == 1) {
-				if (prSubband->ucNumChannels == 13)
-					return BAND_EDGE_CERT_KCC;
-				else
-					return BAND_EDGE_CERT_FCC;
-			}
-		}
-	}
-	return BAND_EDGE_CERT_FCC;
-}
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief This function is called to load manufacture data from NVRAM
@@ -5292,12 +5268,11 @@ wlanLoadManufactureData (
         rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrOFDM40
             = prRegInfo->cBandEdgeMaxPwrOFDM40;
 
-		rCmdEdgeTxPwrLimit.cBandEdgeCert = getBandEdgeCert(prAdapter);
-
-		DBGLOG(INIT, TRACE, ("NVRAM 2G Bandedge CCK(%d) HT20(%d)HT40(%d)\n",
-		       rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrCCK,
-		       rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrOFDM20,
-		       rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrOFDM40));
+        printk("NVRAM 2G Bandedge CCK(%d) HT20(%d)HT40(%d)\n",
+            rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrCCK,
+            rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrOFDM20,
+            rCmdEdgeTxPwrLimit.cBandEdgeMaxPwrOFDM40
+            );
 
         wlanSendSetQueryCmd(prAdapter,
                 CMD_ID_SET_EDGE_TXPWR_LIMIT,

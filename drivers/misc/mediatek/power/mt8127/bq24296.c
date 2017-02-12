@@ -530,22 +530,6 @@ kal_uint32 bq24296_get_vsys_stat(void)
 	return val;
 }
 
-kal_uint32 bq24296_get_pn(void)
-{
-	kal_uint8 val = 0;
-	kal_uint32 ret = 0;
-	ret = bq24296_read_interface((kal_uint8) (bq24296_CON10),
-				     (&val),
-				     (kal_uint8) (CON10_PN_MASK),
-				     (kal_uint8) (CON10_PN_SHIFT)
-	    );
-
-	if (ret)
-		return val;
-	else
-		return 0;
-}
-
 /**********************************************************
   *
   *   [Internal Function]
@@ -560,7 +544,6 @@ void bq24296_dump_register(void)
 	}
 }
 
-kal_bool bq24296_is_found = KAL_FALSE;
 static int bq24296_driver_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 	int err = 0;
@@ -569,22 +552,11 @@ static int bq24296_driver_probe(struct i2c_client *client, const struct i2c_devi
 
 	new_client = client;
 
-	if (bq24296_get_pn() == 0x1) {
-		battery_xlog_printk(BAT_LOG_CRTI, "find BQ24296 device and register charger control.\n");
-		bq24296_dump_register();
-		bq24296_is_found = KAL_TRUE;
-		chargin_hw_init_done = KAL_TRUE;
-		return 0;
-	} else {
-		battery_xlog_printk(BAT_LOG_CRTI, "no BQ24296 device is found.\n");
-		return -1;
-	}
-
 	/* --------------------- */
-	//bq24296_dump_register();
-	//chargin_hw_init_done = KAL_TRUE;
+	bq24296_dump_register();
+	chargin_hw_init_done = KAL_TRUE;
 
-	//return 0;
+	return 0;
 }
 
 /**********************************************************
@@ -620,7 +592,7 @@ static ssize_t store_bq24296_access(struct device *dev, struct device_attribute 
 			ret = bq24296_read_interface(reg_address, &g_reg_value_bq24296, 0xFF, 0x0);
 			pr_notice("[store_bq24296_access] read bq24296 reg 0x%x with value 0x%x !\n",
 				reg_address, g_reg_value_bq24296);
-			pr_notice("[store_bq24296_access] Please use \"cat bq24296_access\" to get value\n");
+			pr_notice("[store_bq24296_access] Please use \"cat bq24296_access\" to get value\r\n");
 		}
 	}
 	return size;

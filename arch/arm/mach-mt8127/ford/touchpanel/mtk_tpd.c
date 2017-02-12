@@ -36,11 +36,6 @@
 
 #define SHOW_TOUCH_VENDOR 1
 #ifdef SHOW_TOUCH_VENDOR
-#ifndef CONFIG_akx123_PROJECT
-#define FT_TPV_ID 0xf2
-#define FT_OFILM_ID 0x51
-extern unsigned char ft_vendor_id;
-#endif
 static char *vendor_name = NULL;
 #endif
 
@@ -432,14 +427,6 @@ static int tpd_probe(struct platform_device *pdev) {
     #ifdef SHOW_TOUCH_VENDOR
     device_create_file(&pdev->dev, &dev_attr_Vendor_Name);
     vendor_name = g_tpd_drv->tpd_device_name;
-	#ifndef CONFIG_akx123_PROJECT
-	if(strcmp(vendor_name, "fts") == 0) {
-		if(ft_vendor_id == FT_TPV_ID)
-			vendor_name = "fts_tpv";
-		if(ft_vendor_id == FT_OFILM_ID)
-			vendor_name = "fts_ofilm";
-	}
-	#endif
     if(NULL == vendor_name) {
         vendor_name = "no vendor name";
     }

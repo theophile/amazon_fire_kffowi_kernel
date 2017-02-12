@@ -64,11 +64,6 @@
 
 #include <mach/mt_storage_logger.h>
 
-#ifdef CONFIG_AMAZON_METRICS_LOG
-#include <linux/metricslog.h>
-#endif
-
-#define	METRICS_DELAY			HZ
 #define EXT_CSD_BOOT_SIZE_MULT          226 /* R */
 #define EXT_CSD_RPMB_SIZE_MULT          168 /* R */
 #define EXT_CSD_GP1_SIZE_MULT           143 /* R/W 3 bytes */
@@ -96,11 +91,7 @@ u32 g_emmc_mode_switch = 0;
 			__res |= resp[__off-1] << ((32 - __shft) % 32);	\
 		__res & __mask;						\
 	}) 
-
-#define FILTER_INVALIDCMD(opcode) \
-((opcode == 5) || (opcode == 8) || (opcode == 19) || (opcode == 21)	\
-|| (opcode == 52) || (opcode == 55))
-
+	
 #ifdef MTK_EMMC_ETT_TO_DRIVER
 #include "emmc_device_list.h"
 static  u8   m_id = 0;           // Manufacturer ID
@@ -181,92 +172,6 @@ static struct msdc_regs *msdc_reg[HOST_MAX_NUM];
 #ifdef MTK_SDIO30_TEST_MODE_SUPPORT
 static unsigned int msdc_online_tuning(struct msdc_host   *host, unsigned fn, unsigned addr);
 #endif // MTK_SDIO30_TEST_MODE_SUPPORT
-
-#define MSDC_DEV_ATTR(name, fmt, val, fmt_type)					\
-static ssize_t msdc_attr_##name##_show(struct device *dev, struct device_attribute *attr, char *buf)	\
-{										\
-	struct mmc_host *mmc = dev_get_drvdata(dev);				\
-	struct msdc_host *host = mmc_priv(mmc);					\
-	return sprintf(buf, fmt "\n", (fmt_type)val);				\
-}										\
-static ssize_t msdc_attr_##name##_store(struct device *dev,			\
-	struct device_attribute *attr, const char *buf, size_t count)		\
-{										\
-	fmt_type tmp;								\
-	struct mmc_host *mmc = dev_get_drvdata(dev);				\
-	struct msdc_host *host = mmc_priv(mmc);					\
-	int n = sscanf(buf, fmt, &tmp);						\
-	val = (typeof(val))tmp;							\
-	return n ? count : -EINVAL;						\
-}										\
-static DEVICE_ATTR(name, S_IRUGO | S_IWUSR | S_IWGRP, msdc_attr_##name##_show, msdc_attr_##name##_store)
-
-MSDC_DEV_ATTR(crc_count, "%d", host->crc_count, u32);
-MSDC_DEV_ATTR(crc_invalid_count, "%d", host->crc_invalid_count, u32);
-MSDC_DEV_ATTR(req_count, "%d", host->req_count, u32);
-MSDC_DEV_ATTR(datatimeout_count, "%d", host->datatimeout_count, u32);
-MSDC_DEV_ATTR(cmdtimeout_count, "%d", host->cmdtimeout_count, u32);
-MSDC_DEV_ATTR(reqtimeout_count, "%d", host->reqtimeout_count, u32);
-MSDC_DEV_ATTR(pc_count, "%d", host->pc_count, u32);
-MSDC_DEV_ATTR(pc_suspend, "%d", host->pc_suspend, u32);
-MSDC_DEV_ATTR(inserted, "%d", host->inserted, u32);
-
-static struct device_attribute *msdc_attrs[] = {
-	&dev_attr_crc_count,
-	&dev_attr_crc_invalid_count,
-	&dev_attr_req_count,
-	&dev_attr_datatimeout_count,
-	&dev_attr_cmdtimeout_count,
-	&dev_attr_reqtimeout_count,
-	&dev_attr_pc_count,
-	&dev_attr_pc_suspend,
-	&dev_attr_inserted,
-	NULL,
-};
-
-static void msdc_add_device_attrs(struct msdc_host *host, struct device_attribute *attrs[])
-{
-	int i, ret;
-
-	if (!attrs)
-		return;
-
-	for (i = 0; attrs[i]; ++i) {
-		ret = device_create_file(host->dev, attrs[i]);
-		if (ret)
-			dev_err(host->dev, "failed to register attribute: %s; err=%d\n",
-				attrs[i]->attr.name, ret);
-	}
-}
-
-static void msdc_remove_device_attrs(struct msdc_host *host, struct device_attribute *attrs[])
-{
-	int i;
-
-	if (!attrs)
-		return;
-
-	for (i = 0; attrs[i]; ++i)
-		device_remove_file(host->dev, attrs[i]);
-}
-
-#ifdef CONFIG_AMAZON_METRICS_LOG
-static void msdc_metrics_work(struct work_struct *work)
-{
-	struct msdc_host *host = container_of(work, struct msdc_host,
-			metrics_work.work);
-
-	MSDC_LOG_COUNTER_TO_VITALS(crc, host->crc_count);
-	MSDC_LOG_COUNTER_TO_VITALS(crc_invalid, host->crc_invalid_count);
-	MSDC_LOG_COUNTER_TO_VITALS(req, host->req_count);
-	MSDC_LOG_COUNTER_TO_VITALS(datato, host->datatimeout_count);
-	MSDC_LOG_COUNTER_TO_VITALS(cmdto, host->cmdtimeout_count);
-	MSDC_LOG_COUNTER_TO_VITALS(reqto, host->reqtimeout_count);
-	MSDC_LOG_COUNTER_TO_VITALS(pc_count, host->pc_count);
-	MSDC_LOG_COUNTER_TO_VITALS(pc_suspend, host->pc_suspend);
-	MSDC_LOG_COUNTER_TO_VITALS(inserted, host->inserted);
-}
-#endif
 
 //=================================
 
@@ -1889,13 +1794,6 @@ static void msdc_tasklet_card(unsigned long arg)
 		else
         	inserted = (host->sd_cd_polarity == 0) ? 0 : 1;
     }
-
-	if ((host->hw->host_function == MSDC_SD) && inserted) {
-		host->inserted++;
-#ifdef CONFIG_AMAZON_METRICS_LOG
-		mod_delayed_work(system_wq, &host->metrics_work, METRICS_DELAY);
-#endif
-	}
 	if(host->block_bad_card){
 		inserted = 0;
 		if(host->mmc->card)
@@ -2589,17 +2487,6 @@ static void msdc_set_power_mode(struct msdc_host *host, u8 mode)
 #endif
             msdc_pin_config(host, MSDC_PIN_PULL_DOWN);
         }
-
-	if ((host->hw->host_function == MSDC_SD) && mode) {
-		host->pc_count++;
-#ifdef CONFIG_AMAZON_METRICS_LOG
-		mod_delayed_work(system_wq, &host->metrics_work, METRICS_DELAY);
-#endif
-	}
-
-	dev_info(host->dev, "crc/total %d/%d invalcrc %d datato %d cmdto %d total_pc %d pc_sus %d\n",
-			host->crc_count, host->req_count, host->crc_invalid_count, host->datatimeout_count,
-			host->cmdtimeout_count, host->pc_count, host->pc_suspend);
         mdelay(10);
         msdc_pin_reset (host, MSDC_PIN_PULL_DOWN);
     }
@@ -3344,13 +3231,6 @@ static unsigned int msdc_command_start(struct msdc_host   *host,
             if (time_after(jiffies, tmo)) {
                 ERR_MSG("XXX cmd_busy timeout: before CMD<%d>", opcode);	
                 cmd->error = (unsigned int)-ETIMEDOUT;
-		if (host->hw->host_function == MSDC_SD) {
-			host->reqtimeout_count++;
-#ifdef CONFIG_AMAZON_METRICS_LOG
-			mod_delayed_work(system_wq, &host->metrics_work, METRICS_DELAY);
-#endif
-		}
-
                 msdc_reset_hw(host->id);
                 return cmd->error;  /* Fix me: error handling */
             } 
@@ -3362,13 +3242,6 @@ static unsigned int msdc_command_start(struct msdc_host   *host,
             if (time_after(jiffies, tmo)) {
                 ERR_MSG("XXX sdc_busy timeout: before CMD<%d>", opcode);	
                 cmd->error = (unsigned int)-ETIMEDOUT;
-		if (host->hw->host_function == MSDC_SD) {
-			host->reqtimeout_count++;
-#ifdef CONFIG_AMAZON_METRICS_LOG
-			mod_delayed_work(system_wq, &host->metrics_work, METRICS_DELAY);
-#endif
-		}
-
                 msdc_reset_hw(host->id);
                 return cmd->error;    
             }   
@@ -3413,8 +3286,7 @@ static unsigned int msdc_command_start(struct msdc_host   *host,
             rawarg = MMC_TRIM_ARG;
     }
 #endif
-	if (host->hw->host_function == MSDC_SD)
-		host->req_count++;
+
     sdc_send_cmd(rawcmd, rawarg);        
 
     //end:    	
@@ -3465,24 +3337,15 @@ static unsigned int msdc_command_resp_polling(struct msdc_host   *host,
             break;
         }
         
-		if (time_after(jiffies, tmo)) {
-			ERR_MSG("XXX CMD<%d> polling_for_completion timeout ARG<0x%.8x>",
-					cmd->opcode, cmd->arg);
-			cmd->error = (unsigned int)-ETIMEDOUT;
-			if (host->hw->host_function == MSDC_SD) {
-				host->cmdtimeout_count++;
-#ifdef CONFIG_AMAZON_METRICS_LOG
-				mod_delayed_work(system_wq, &host->metrics_work,
-						METRICS_DELAY);
-#endif
-			}
-
-			host->sw_timeout++;
-			msdc_dump_info(host->id);
-			msdc_reset_hw(host->id);
-			goto out;
-		}
-	}
+		 if (time_after(jiffies, tmo)) {
+                ERR_MSG("XXX CMD<%d> polling_for_completion timeout ARG<0x%.8x>", cmd->opcode, cmd->arg);	
+                cmd->error = (unsigned int)-ETIMEDOUT;
+				host->sw_timeout++;
+		        msdc_dump_info(host->id); 
+                msdc_reset_hw(host->id);
+                goto out;    
+         }   
+    }
 
     /* command interrupts */
     if (intsts & cmdsts) {
@@ -3521,27 +3384,12 @@ static unsigned int msdc_command_resp_polling(struct msdc_host   *host,
         } else if (intsts & MSDC_INT_RSPCRCERR) {
             cmd->error = (unsigned int)-EIO;
             IRQ_MSG("XXX CMD<%d> MSDC_INT_RSPCRCERR Arg<0x%.8x>",cmd->opcode, cmd->arg);
-		msdc_reset_hw(host->id);
-		if (host->hw->host_function == MSDC_SD) {
-			if (FILTER_INVALIDCMD(cmd->opcode))
-				host->crc_invalid_count++;
-			else
-				host->crc_count++;
-#ifdef CONFIG_AMAZON_METRICS_LOG
-			mod_delayed_work(system_wq, &host->metrics_work, METRICS_DELAY);
-#endif
-		}
-	} else if (intsts & MSDC_INT_CMDTMO) {
-		cmd->error = (unsigned int)-ETIMEDOUT;
-		IRQ_MSG("XXX CMD<%d> MSDC_INT_CMDTMO Arg<0x%.8x>",cmd->opcode, cmd->arg);
-		msdc_reset_hw(host->id);
-		if (host->hw->host_function == MSDC_SD) {
-			host->cmdtimeout_count++;
-#ifdef CONFIG_AMAZON_METRICS_LOG
-			mod_delayed_work(system_wq, &host->metrics_work, METRICS_DELAY);
-#endif
-		}
-	}
+            msdc_reset_hw(host->id); 
+        } else if (intsts & MSDC_INT_CMDTMO) {
+            cmd->error = (unsigned int)-ETIMEDOUT;
+            IRQ_MSG("XXX CMD<%d> MSDC_INT_CMDTMO Arg<0x%.8x>",cmd->opcode, cmd->arg);
+            msdc_reset_hw(host->id); 
+        }
 #ifdef MTK_MSDC_USE_CMD23
         if ((sbc != NULL) && (host->autocmd & MSDC_AUTOCMD23)) {
              if (intsts & MSDC_INT_ACMDRDY) {
@@ -4553,14 +4401,7 @@ static int msdc_do_request(struct mmc_host*mmc, struct mmc_request*mrq)
                 msdc_set_timeout(host, data->timeout_ns, data->timeout_clks);
             }
         }
-
-	if (host->hw->host_function == MSDC_SD) {
-		host->req_count++;
-		dev_dbg(host->dev, "crc/total %d/%d invalcrc %d datato %d cmdto %d total_pc %d pc_sus %d\n",
-				host->crc_count, host->req_count, host->crc_invalid_count, host->datatimeout_count,
-				host->cmdtimeout_count, host->pc_count, host->pc_suspend);
-	}
-
+        
         msdc_set_blknum(host, data->blocks);
         //msdc_clr_fifo();  /* no need */
 
@@ -7186,19 +7027,11 @@ static irqreturn_t msdc_irq(int irq, void *dev_id)
             if (intsts & MSDC_INT_DATTMO){
                	data->error = (unsigned int)-ETIMEDOUT;				
                	IRQ_MSG("XXX CMD<%d> Arg<0x%.8x> MSDC_INT_DATTMO", host->mrq->cmd->opcode, host->mrq->cmd->arg);
-		if (host->hw->host_function == MSDC_SD)
-			host->datatimeout_count++;
             }
             else if (intsts & MSDC_INT_DATCRCERR){
                 data->error = (unsigned int)-EIO;			
                 IRQ_MSG("XXX CMD<%d> Arg<0x%.8x> MSDC_INT_DATCRCERR, SDC_DCRC_STS<0x%x>", 
-				host->mrq->cmd->opcode, host->mrq->cmd->arg, sdr_read32(SDC_DCRC_STS));
-		if (host->hw->host_function == MSDC_SD) {
-			if (FILTER_INVALIDCMD(host->mrq->cmd->opcode))
-				host->crc_invalid_count++;
-			else
-				host->crc_count++;
-		}
+                        host->mrq->cmd->opcode, host->mrq->cmd->arg, sdr_read32(SDC_DCRC_STS));
             }
                                     
             //if(sdr_read32(MSDC_INTEN) & MSDC_INT_XFER_COMPL) {  
@@ -7225,23 +7058,13 @@ static irqreturn_t msdc_irq(int irq, void *dev_id)
             	u32 *arsp = &stop->resp[0];
             	*arsp = sdr_read32(SDC_ACMD_RESP);
             }
-		else if (intsts & MSDC_INT_ACMDCRCERR) {
-			stop->error =(unsigned int)-EIO;
-			host->error |= REQ_STOP_EIO;
-			if (host->hw->host_function == MSDC_SD) {
-				if (FILTER_INVALIDCMD(host->mrq->cmd->opcode))
-					host->crc_invalid_count++;
-				else
-					host->crc_count++;
-			}
-
-			msdc_reset_hw(host->id);
-		}
+        	else if (intsts & MSDC_INT_ACMDCRCERR) {
+					stop->error =(unsigned int)-EIO;
+					host->error |= REQ_STOP_EIO;
+        		    msdc_reset_hw(host->id); 
+            }   
         	 else if (intsts & MSDC_INT_ACMDTMO) {
 					stop->error =(unsigned int)-ETIMEDOUT;
-					if (host->hw->host_function == MSDC_SD)
-						host->cmdtimeout_count++;
-
 					host->error |= REQ_STOP_TMO;
 					msdc_reset_hw(host->id); 
         	}
@@ -7282,21 +7105,12 @@ static irqreturn_t msdc_irq(int irq, void *dev_id)
                 *rsp = sdr_read32(SDC_RESP0);    
                 break;
             }
-	} else if (intsts & MSDC_INT_RSPCRCERR) {
-		cmd->error = (unsigned int)-EIO;
-		IRQ_MSG("XXX CMD<%d> MSDC_INT_RSPCRCERR Arg<0x%.8x>",cmd->opcode, cmd->arg);
-		if (host->hw->host_function == MSDC_SD) {
-			if (FILTER_INVALIDCMD(cmd->opcode))
-				host->crc_invalid_count++;
-			else
-				host->crc_count++;
-		}
-
-		msdc_reset_hw(host->id);
+        } else if (intsts & MSDC_INT_RSPCRCERR) {
+        			cmd->error = (unsigned int)-EIO;
+					IRQ_MSG("XXX CMD<%d> MSDC_INT_RSPCRCERR Arg<0x%.8x>",cmd->opcode, cmd->arg);
+	            	msdc_reset_hw(host->id); 
         	}
          else if (intsts & MSDC_INT_CMDTMO) {
-		if (host->hw->host_function == MSDC_SD)
-			host->cmdtimeout_count++;
             		cmd->error = (unsigned int)-ETIMEDOUT;
 					IRQ_MSG("XXX CMD<%d> MSDC_INT_CMDTMO Arg<0x%.8x>",cmd->opcode, cmd->arg);
     		        msdc_reset_hw(host->id);  
@@ -7310,19 +7124,7 @@ static irqreturn_t msdc_irq(int irq, void *dev_id)
         //printk(KERN_INFO "msdc[%d] MMCIRQ: SDC_CSTS=0x%.8x\r\n", host->id, sdr_read32(SDC_CSTS));    
     }
     latest_int_status[host->id] = 0;
-
-#ifdef CONFIG_AMAZON_METRICS_LOG
-	if ((host->hw->host_function == MSDC_SD) &&
-			((cmd &&
-			 (unlikely(cmd->error == -ETIMEDOUT) || unlikely(cmd->error == -EIO))) ||
-			(data &&
-			 (unlikely(data->error == -ETIMEDOUT) || unlikely(data->error == -EIO))) ||
-			(stop &&
-			 (unlikely(stop->error == -ETIMEDOUT) || unlikely(stop->error == -EIO)))))
-		mod_delayed_work(system_wq, &host->metrics_work, METRICS_DELAY);
-#endif
-
-	return IRQ_HANDLED;
+    return IRQ_HANDLED;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -8077,7 +7879,6 @@ static int msdc_drv_probe(struct platform_device *pdev)
     mmc->max_blk_count = mmc->max_req_size;
 
     host = mmc_priv(mmc);
-    host->dev       = &pdev->dev;
     host->hw        = hw;
     host->mmc       = mmc;
     host->id        = pdev->id;
@@ -8205,10 +8006,6 @@ static int msdc_drv_probe(struct platform_device *pdev)
     
     msdc_init_hw(host);
 
-#ifdef CONFIG_AMAZON_METRICS_LOG
-	INIT_DELAYED_WORK(&host->metrics_work, msdc_metrics_work);
-#endif
-
     //mt65xx_irq_set_sens(irq, MT65xx_EDGE_SENSITIVE);
     //mt65xx_irq_set_polarity(irq, MT65xx_POLARITY_LOW);
     ret = request_irq((unsigned int)irq, msdc_irq, IRQF_TRIGGER_LOW, DRV_NAME, host);
@@ -8273,8 +8070,7 @@ static int msdc_drv_probe(struct platform_device *pdev)
     mt_set_gpio_out(1, 0); //1-high, 0-low
 #endif    
 
-	msdc_add_device_attrs(host, msdc_attrs);
-	return 0;
+    return 0;
 
 free_irq:
     free_irq(irq, host);
@@ -8311,7 +8107,6 @@ static int msdc_drv_remove(struct platform_device *pdev)
 
     platform_set_drvdata(pdev, NULL);
     mmc_remove_host(host->mmc);
-    msdc_remove_device_attrs(host, msdc_attrs);
     msdc_deinit_hw(host);
 
     tasklet_kill(&host->card_tasklet);
@@ -8395,13 +8190,6 @@ static int msdc_drv_resume(struct platform_device *pdev)
 		}
     state.event = PM_EVENT_RESUME;
     if (mmc && (host->hw->flags & MSDC_SYS_SUSPEND)) {/* will set for card */
-		if (host->hw->host_function == MSDC_SD) {
-			host->pc_suspend++;
-#ifdef CONFIG_AMAZON_METRICS_LOG
-			mod_delayed_work(system_wq, &host->metrics_work, METRICS_DELAY);
-#endif
-		}
-
         msdc_pm(state, (void*)host);
     }
 		

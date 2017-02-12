@@ -435,116 +435,6 @@ static int kd_gc2355_powerdown(char *mode_name)
 	return ret;
 }
 
-static int kd_sp2509_poweron(char *mode_name)
-{
-	int ret;
-	PK_DBG("[kd_sp2509_poweron]:----darren----start,pinSetIdx:%d\n",
-	       pinSetIdx);
-	/* ret = kd_poweron_main_devices(VOL_1800, VOL_2800, VOL_1800, 0, mode_name,0); */
-		if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMRST]) {
-		/*PDN pin */
-		if (mt_set_gpio_out
-		    (pinSet[pinSetIdx][IDX_PS_CMPDN], GPIO_OUT_ONE)) {
-			PK_DBG("[CAMERA LENS] set gpio failed!!\n");
-		}
-		mdelay(10);
-		if (mt_set_gpio_out
-		    (pinSet[pinSetIdx][IDX_PS_CMRST], GPIO_OUT_ZERO)) {
-			PK_DBG("[CAMERA SENSOR] set gpio failed!!\n");
-		}
-		mdelay(10);
-	}
-	ret = hwPowerOn(CAMERA_POWER_VCAM_D2, VOL_1800, mode_name);
-
-	if (ret != TRUE) {
-		PK_DBG
-		    ("[CAMERA SENSOR] Fail to enable digital power VCAM_D2\n");
-		goto poweronerr;
-	}
-	mdelay(5);
-#if 0
-	ret = hwPowerOn(CAMERA_POWER_VCAM_D, VOL_1800, mode_name);
-	if (ret != TRUE) {
-		PK_DBG("[CAMERA SENSOR] Fail to enable digital power VCAM_A\n");
-		goto poweronerr;
-	}
-	mdelay(5);
-#endif
-	ret = hwPowerOn(CAMERA_POWER_VCAM_A, VOL_2800, mode_name);
-	if (ret != TRUE) {
-		PK_DBG("[CAMERA SENSOR] Fail to enable digital power VCAM_D\n");
-		goto poweronerr;
-	}
-	mdelay(5);		/* wait power to be stable  */
-	disable_inactive_sensor();
-	if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMRST]) {
-		/*PDN pin */
-		if (mt_set_gpio_out
-		    (pinSet[pinSetIdx][IDX_PS_CMPDN], GPIO_OUT_ZERO)) {
-			PK_DBG("[CAMERA LENS] set gpio failed!!\n");
-		}
-		mdelay(5);	
-		if (mt_set_gpio_out
-				(pinSet[pinSetIdx][IDX_PS_CMPDN], GPIO_OUT_ONE)) {
-				PK_DBG("[CAMERA LENS] set gpio failed!!\n");
-			}
-		
-		mdelay(5);
-		if (mt_set_gpio_out
-				(pinSet[pinSetIdx][IDX_PS_CMPDN], GPIO_OUT_ZERO)) {
-				PK_DBG("[CAMERA LENS] set gpio failed!!\n");
-			}
-		mdelay(5);
-		if (mt_set_gpio_out
-		    (pinSet[pinSetIdx][IDX_PS_CMRST], GPIO_OUT_ONE)) {
-			PK_DBG("[CAMERA SENSOR] set gpio failed!!\n");
-		}
-		mdelay(5);
-				if (mt_set_gpio_out
-		    (pinSet[pinSetIdx][IDX_PS_CMRST], GPIO_OUT_ZERO)) {
-			PK_DBG("[CAMERA SENSOR] set gpio failed!!\n");
-		}
-		mdelay(5);
-				if (mt_set_gpio_out
-		    (pinSet[pinSetIdx][IDX_PS_CMRST], GPIO_OUT_ONE)) {
-			PK_DBG("[CAMERA SENSOR] set gpio failed!!\n");
-		}
-		mdelay(5);
-		
-	}
-      poweronerr:
-	return ret;
-}
-
-
-static int kd_sp2509_powerdown(char *mode_name)
-{
-	int ret;
-	PK_DBG("[kd_sp2509_powerdown] start,pinSetIdx:%d\n", pinSetIdx);
-
-	if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMRST]) {
-		if (mt_set_gpio_out
-		    (pinSet[pinSetIdx][IDX_PS_CMRST],
-		     pinSet[pinSetIdx][IDX_PS_CMRST + IDX_PS_OFF])) {
-			PK_DBG("[CAMERA SENSOR] set gpio failed!!\n");
-		}
-	}
-	if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMRST]) {
-		/*PDN pin */
-		if (mt_set_gpio_out
-		    (pinSet[pinSetIdx][IDX_PS_CMPDN],
-		     pinSet[pinSetIdx][IDX_PS_CMPDN + IDX_PS_ON])) {
-			PK_DBG("[CAMERA LENS] set gpio failed!!\n");
-		}
-	}
-
-	/*ret = kd_powerdown_sub_devices(mode_name); */
-	ret = hwPowerDown(CAMERA_POWER_VCAM_A, mode_name);
-	//ret = hwPowerDown(CAMERA_POWER_VCAM_D, mode_name);
-	ret = hwPowerDown(CAMERA_POWER_VCAM_D2, mode_name);
-      poweronerr:
-	return ret;
-}
 static int kd_gc2035_poweron(char *mode_name)
 {
 	int ret;
@@ -789,12 +679,6 @@ static int kd_sp0a19yuv_poweron(char *mode_name)
 
 	printk("[kd_sp0a19yuv_poweron]:----darren----start,pinSetIdx:%d\n",
 	       pinSetIdx);
-	ret = hwPowerOn(CAMERA_POWER_VCAM_A, VOL_2800, mode_name);
-	if (ret != TRUE) {
-		PK_DBG("[CAMERA SENSOR] Fail to enable digital power VCAM_A\n");
-		goto poweronerr;
-	}
-	mdelay(5);
 	ret = hwPowerOn(CAMERA_POWER_VCAM_D2, VOL_1800, mode_name);
 	if (ret != TRUE) {
 		PK_DBG
@@ -802,15 +686,18 @@ static int kd_sp0a19yuv_poweron(char *mode_name)
 		goto poweronerr;
 	}
 	mdelay(5);
-	/*
+	ret = hwPowerOn(CAMERA_POWER_VCAM_A, VOL_2800, mode_name);
+	if (ret != TRUE) {
+		PK_DBG("[CAMERA SENSOR] Fail to enable digital power VCAM_A\n");
+		goto poweronerr;
+	}
+	mdelay(5);
 	ret = hwPowerOn(CAMERA_POWER_VCAM_D, VOL_1800, mode_name);
 	if (ret != TRUE) {
 		PK_DBG("[CAMERA SENSOR] Fail to enable digital power VCAM_D\n");
 		goto poweronerr;
 	}
 	mdelay(5);
-	*/
-	
 	disable_inactive_sensor();
 	if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMRST]) {
 		if (mt_set_gpio_out
@@ -824,6 +711,23 @@ static int kd_sp0a19yuv_poweron(char *mode_name)
 		}
 		mdelay(10);
 		PK_DBG("---darren_power:reset on\n");
+		if (mt_set_gpio_out
+		    (pinSet[pinSetIdx][IDX_PS_CMRST], GPIO_OUT_ONE)) {
+			PK_DBG("[CAMERA SENSOR] set gpio failed!!\n");
+		}
+		mdelay(10);
+		PK_DBG("---darren_power:reset off\n");
+		if (mt_set_gpio_out
+		    (pinSet[pinSetIdx][IDX_PS_CMRST], GPIO_OUT_ZERO)) {
+			PK_DBG("[CAMERA SENSOR] set gpio failed!!\n");
+		}
+		mdelay(10);
+		PK_DBG("---darren_power:reset on\n");
+		if (mt_set_gpio_out
+		    (pinSet[pinSetIdx][IDX_PS_CMRST], GPIO_OUT_ONE)) {
+			PK_DBG("[CAMERA SENSOR] set gpio failed!!\n");
+		}
+		mdelay(5);
 	}
       poweronerr:
 	return ret;
@@ -833,16 +737,21 @@ static int kd_sp0a19yuv_powerdown(char *mode_name)
 {
 	int ret;
 	printk("[kd_sp0a19yuv_powerdown] start,pinSetIdx:%d\n", pinSetIdx);
-
+	if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMRST]) {
+		if (mt_set_gpio_out
+		    (pinSet[pinSetIdx][IDX_PS_CMRST],
+		     pinSet[pinSetIdx][IDX_PS_CMRST + IDX_PS_OFF])) {
+			PK_DBG("[CAMERA SENSOR] set gpio failed!!\n");
+		}
+	}
+	ret = kd_powerdown_main_devices(mode_name);
 	if (GPIO_CAMERA_INVALID != pinSet[pinSetIdx][IDX_PS_CMRST]) {
 		if (mt_set_gpio_out
 		    (pinSet[pinSetIdx][IDX_PS_CMPDN],
-		     pinSet[pinSetIdx][IDX_PS_CMPDN + IDX_PS_OFF])) {
+		     pinSet[pinSetIdx][IDX_PS_CMPDN + IDX_PS_ON])) {
 			PK_DBG("[CAMERA LENS] set gpio failed!!\n");
 		}
 	}
-	ret = hwPowerDown(CAMERA_POWER_VCAM_D2, mode_name);
-	ret = hwPowerDown(CAMERA_POWER_VCAM_A, mode_name);
       poweronerr:
 	return ret;
 }
@@ -851,7 +760,7 @@ static int kd_sp0a19yuv_powerdown(char *mode_name)
 static int kd_gc0312_poweron(char *mode_name)
 {
 	int ret;
-	PK_DBG("statr to run kd_gc0312_poweron! %d\n\n", pinSetIdx);
+	printk("statr to run kd_gc0329_poweron! %d\n\n", pinSetIdx);
 	ret =
 	    kd_poweron_sub_devices(VOL_1800, VOL_2800, VOL_1800,
 				   0 /*VOL_2800 */ , mode_name);
@@ -1651,16 +1560,12 @@ int kdCISModulePowerOn(CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx,
 		     || (0 ==
 			 strcmp(SENSOR_DRVNAME_GC2356_MIPI_RAW, currSensorName))
 		     || (0 ==
-			 strcmp(SENSOR_DRVNAME_GC2355_MIPI_RAW_HUAQUAN, currSensorName))
-		     || (0 ==
 			 strcmp(SENSOR_DRVNAME_S5K5CAGX_YUV, currSensorName))
 		     || (0 == strcmp(SENSOR_DRVNAME_SP0A19_YUV, currSensorName))
 		     || (0 ==
 			 strcmp(SENSOR_DRVNAME_OV5648_MIPI_RAW, currSensorName))
 		     || (0 ==
 			 strcmp(SENSOR_DRVNAME_HI544_MIPI_RAW, currSensorName))
-			 || (0 ==
-			 strcmp(SENSOR_DRVNAME_SP2509_MIPI_RAW, currSensorName))
 		    ))
 			pinSetIdx = 0;
 		else {
@@ -1670,10 +1575,13 @@ int kdCISModulePowerOn(CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx,
 			goto _kdCISModulePowerOn_exit_;
 		}
 	} else if (DUAL_CAMERA_SUB_SENSOR == SensorIdx) {
-		if (currSensorName && ((0 == strcmp(SENSOR_DRVNAME_GC0312_YUV,currSensorName))
-					   || (0 == strcmp(SENSOR_DRVNAME_GC0312_YUV_BLX,currSensorName))
-				       || (0 == strcmp(SENSOR_DRVNAME_HI704_YUV,currSensorName))
-				       || (0 == strcmp(SENSOR_DRVNAME_SP0A19_YUV,currSensorName))
+		if (currSensorName && ((0 ==
+					strcmp(SENSOR_DRVNAME_GC0312_YUV,
+					       currSensorName))
+				       || (0 ==
+					   strcmp
+					   (SENSOR_DRVNAME_HI704_YUV,
+					    currSensorName))
 		    ))
 			pinSetIdx = 1;
 		else {
@@ -1723,23 +1631,10 @@ int kdCISModulePowerOn(CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx,
 				goto _kdCISModulePowerOn_exit_;
 		} else if (currSensorName
 			   && (0 ==
-			       strcmp(SENSOR_DRVNAME_GC2355_MIPI_RAW_HUAQUAN,
-				      currSensorName))) {
-			PK_DBG("is gc2355 on\n");
-			if (TRUE != kd_gc2355_poweron(mode_name))
-				goto _kdCISModulePowerOn_exit_;
-		} else if (currSensorName
-			   && (0 ==
 			       strcmp(SENSOR_DRVNAME_GC2356_MIPI_RAW,
 				      currSensorName))) {
 			PK_DBG("is gc2356 on\n");
 			if (TRUE != kd_gc2355_poweron(mode_name))
-				goto _kdCISModulePowerOn_exit_;
-		} else if (currSensorName
-			   && (0 == strcmp(SENSOR_DRVNAME_SP2509_MIPI_RAW,
-					   currSensorName))) {
-			PK_DBG("is sp2509 on\n");
-			if (TRUE != kd_sp2509_poweron(mode_name))
 				goto _kdCISModulePowerOn_exit_;
 		} else if (currSensorName
 			   && (0 == strcmp(SENSOR_DRVNAME_GC2035_YUV,
@@ -1766,13 +1661,6 @@ int kdCISModulePowerOn(CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx,
 			       strcmp(SENSOR_DRVNAME_GC0312_YUV,
 				      currSensorName))) {
 			PK_DBG("is gc0312 on\n");
-			if (TRUE != kd_gc0312_poweron(mode_name))
-				goto _kdCISModulePowerOn_exit_;
-		}else if (currSensorName
-			   && (0 ==
-			       strcmp(SENSOR_DRVNAME_GC0312_YUV_BLX,
-				      currSensorName))) {
-			PK_DBG("is gc0312 BLX on\n");
 			if (TRUE != kd_gc0312_poweron(mode_name))
 				goto _kdCISModulePowerOn_exit_;
 		} else if (currSensorName
@@ -1855,13 +1743,6 @@ int kdCISModulePowerOn(CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx,
 				goto _kdCISModulePowerOn_exit_;
 		} else if (currSensorName
 			   && (0 ==
-			       strcmp(SENSOR_DRVNAME_GC0312_YUV_BLX,
-				      currSensorName))) {
-			PK_DBG("is gc0312 BLX down\n");
-			if (TRUE != kd_gc0312yuv_powerdown(mode_name))
-				goto _kdCISModulePowerOn_exit_;
-		} else if (currSensorName
-			   && (0 ==
 			       strcmp(SENSOR_DRVNAME_HI704_YUV,
 				      currSensorName))) {
 			PK_DBG("is hi704 down\n");
@@ -1876,24 +1757,10 @@ int kdCISModulePowerOn(CAMERA_DUAL_CAMERA_SENSOR_ENUM SensorIdx,
 				goto _kdCISModulePowerOn_exit_;
 		} else if (currSensorName
 			   && (0 ==
-			       strcmp(SENSOR_DRVNAME_GC2355_MIPI_RAW_HUAQUAN,
-				      currSensorName))) {
-			PK_DBG("is gc2335 down\n");
-			if (TRUE != kd_gc2355_powerdown(mode_name))
-				goto _kdCISModulePowerOn_exit_;
-		} else if (currSensorName
-			   && (0 ==
 			       strcmp(SENSOR_DRVNAME_GC2356_MIPI_RAW,
 				      currSensorName))) {
 			PK_DBG("is gc2356 down\n");
 			if (TRUE != kd_gc2355_powerdown(mode_name))
-				goto _kdCISModulePowerOn_exit_;
-		} else if (currSensorName
-			   && (0 ==
-			       strcmp(SENSOR_DRVNAME_SP2509_MIPI_RAW,
-				      currSensorName))) {
-			PK_DBG("is sp2509 down\n");
-			if (TRUE != kd_sp2509_powerdown(mode_name))
 				goto _kdCISModulePowerOn_exit_;
 		} else if (currSensorName
 			   && (0 ==

@@ -4,11 +4,7 @@ include $(srctree)/drivers/misc/mediatek/Makefile.custom
 ifneq ($(CONFIG_ARCH_MTK_PROJECT),)
 ARCH_MTK_PROJECT := $(shell echo $(CONFIG_ARCH_MTK_PROJECT))
 obj-y   += core/
-ifeq ($(CONFIG_akx123_PROJECT),y)
-	obj-y   += dct/dct_akx123/
-else
-	obj-y   += dct/dct/
-endif
+obj-y   += dct/dct/
 endif
 
 
@@ -22,10 +18,6 @@ endif
 
 ifeq ($(CONFIG_MTK_BMA253),y)
 obj-y   +=  accelerometer/BMA253/
-endif
-
-ifeq ($(CONFIG_MTK_MC3410),y)
-obj-y   +=  accelerometer/MC3410-NEW/
 endif
 
 ifeq ($(CONFIG_CUSTOM_KERNEL_GYROSCOPE),y)

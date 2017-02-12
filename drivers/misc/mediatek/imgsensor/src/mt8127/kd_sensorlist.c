@@ -32,9 +32,7 @@ static DEFINE_SPINLOCK(kdsensor_drv_lock);
 
 static struct i2c_board_info __initdata i2c_devs1={I2C_BOARD_INFO(CAMERA_HW_DRVNAME1, 0xfe>>1)};
 
-//add for hq camera debug log open/close
-static kal_bool debugFlag = KAL_TRUE;
-#define SENSORDB(fmt, arg...) if (debugFlag) {printk("[HQ_CAM][kd_sensorlist]"  fmt, ##arg);}
+
 
 
 /******************************************************************************
@@ -150,103 +148,6 @@ bool setExpGainDoneFlag = 0;
 * migrate new style i2c driver interfaces required by Kirby 20100827
 ********************************************************************************/
 static const struct i2c_device_id CAMERA_HW_i2c_id[] = {{CAMERA_HW_DRVNAME1,0},{}};
-
-
-/*******************************************************************************/
-/*HQ camera sys debug begin */
-/*******************************************************************************/
-#define HQ_CAM_SYSFS_SUPPORT
-#ifdef HQ_CAM_SYSFS_SUPPORT
-UINT32 kdGetSensorInitFuncList(ACDK_KD_SENSOR_INIT_FUNCTION_STRUCT **ppSensorList);
-
-
-static ssize_t sensor_module_show(struct kobject * kobj,struct kobj_attribute * attr,char * buf)
-{
-	ACDK_KD_SENSOR_INIT_FUNCTION_STRUCT *pSensorList_mid = NULL;
-	SENSOR_FUNCTION_STRUCT *g_pInvokeSensorFunc_mid[2] = {NULL,NULL};
-	char *s = buf;
-	int vaule = 0;
-	int num = 0;
-	ssize_t ret;
-	kal_uint8 i;
-	UINT32 leght=1;
-
-	if (0 != kdGetSensorInitFuncList(&pSensorList_mid)) {
-		PK_ERR("[HQ_CAM]ERROR:kdGetSensorInitFuncList()\n");
-		return  -EIO;
-	}
-
-	for (num=0; num < MAX_NUM_OF_SUPPORT_SENSOR; num++) {
-		if (NULL == pSensorList_mid[num].SensorInit) {
-			SENSORDB("[HQ_CAM][kd_sensorlist]sensorlist end\n");
-			break;
-		}
-		SENSORDB("[HQ_CAM][kd_sensorlist]sensorname=%s\n", pSensorList_mid[num].drvname);
-		pSensorList_mid[num].SensorInit(&g_pInvokeSensorFunc_mid[0]);
-		if ( g_pInvokeSensorFunc_mid[0] ) {
-			ret = g_pInvokeSensorFunc_mid[i]->SensorFeatureControl(SENSOR_FEATURE_GET_SENSOR_CURRENT_MID, &vaule, &leght);
-			//s += sprintf(s, "i is :%d,current MID: 0x%x\n", i, vaule);
-			if (vaule == 0x01) {
-				s += sprintf(s, "vaule is 0x%x, Rear Camera SP2509 BLX module\n",vaule);
-			} else if (vaule == 0x02) {
-				s += sprintf(s, "vaule is 0x%x, Rear Camera GC2355 HuaQuan module\n",vaule);
-			} else if (vaule == 0x03) {
-				s += sprintf(s, "vaule is 0x%x, Front Camera SP0A19 QunHui module\n",vaule);
-			} else if (vaule == 0x04) {
-				s += sprintf(s, "vaule is 0x%x, Front Camera GC0312 BLX module\n",vaule);
-			} else if (vaule == 0x05) {
-				s += sprintf(s, "vaule is 0x%x, Rear Camera SP2509 HuaQuan module\n",vaule);
-			}
-			else {
-				s += sprintf(s, "vaule is 0x%x, NULL module\n",vaule);
-			}
-		}
-		else {
-			SENSORDB("[HQ_CAM][kd_sensorlist] sensorlist is NULL");
-		}
-	}
-
-	return (s - buf);
-}
-
-static ssize_t sensor_module_store(struct kobject *kobj, struct kobj_attribute *attr,const char *buf, size_t n)
-{
-	return n;
-}
-
-static DEVICE_ATTR(sensor_module, 0644,  sensor_module_show, sensor_module_store);
-
-static struct attribute *CAM_sysfs_attrs[] = {
-	&dev_attr_sensor_module.attr,
-	NULL,
-	};
-static struct attribute_group CAM_attr_group = {
-	.attrs = CAM_sysfs_attrs,
-	};
-
-struct kobject *HQ_CAM_debug_kobj;
-static int CAM_sysfs_init(void)
-{
-	HQ_CAM_debug_kobj = kobject_create_and_add("hq_cam", NULL);
-	if (HQ_CAM_debug_kobj == NULL) {
-	SENSORDB("[HQ_CAM][kd_sensorlist] falied to creat hq_cam\n");
-	return -ENOMEM;
-	}
-
-	return sysfs_create_group(HQ_CAM_debug_kobj, &CAM_attr_group);
-}
-static void CAM_sysfs_exit(void)
-{
-	sysfs_remove_group(HQ_CAM_debug_kobj, &CAM_attr_group);
-	kobject_put(HQ_CAM_debug_kobj);
-}
-
-#endif
-/*******************************************************************************/
-/*HQ camera sys debug end */
-/*******************************************************************************/
-
-
 
 /*******************************************************************************
 * general camera image sensor kernel driver
@@ -1320,8 +1221,7 @@ inline static int  adopt_CAMERA_HW_FeatureControl(void *pBuf)
  		case SENSOR_FEATURE_SET_TEST_PATTERN:
 		case SENSOR_FEATURE_GET_TEST_PATTERN_CHECKSUM_VALUE:	
 		case SENSOR_FEATURE_GET_SENSOR_CURRENT_TEMPERATURE:
-		case SENSOR_FEATURE_GET_SENSOR_CURRENT_MID:
-		case SENSOR_FEATURE_SET_YUV_3A_CMD:
+        case SENSOR_FEATURE_SET_YUV_3A_CMD:
             //
             if(copy_from_user((void*)pFeaturePara , (void *) pFeatureCtrl->pFeaturePara, FeatureParaLen)) {
                 kfree(pFeaturePara);
@@ -1471,7 +1371,6 @@ inline static int  adopt_CAMERA_HW_FeatureControl(void *pBuf)
 		case SENSOR_FEATURE_SET_TEST_PATTERN:
 		case SENSOR_FEATURE_GET_TEST_PATTERN_CHECKSUM_VALUE:	
 		case SENSOR_FEATURE_GET_SENSOR_CURRENT_TEMPERATURE:
-		case SENSOR_FEATURE_GET_SENSOR_CURRENT_MID:
             //
             if(copy_to_user((void __user *) pFeatureCtrl->pFeaturePara, (void*)pFeaturePara , FeatureParaLen)) {
                 kfree(pFeaturePara);
@@ -1810,7 +1709,6 @@ static int CAMERA_HW_i2c_probe(struct i2c_client *client, const struct i2c_devic
         return i4RetValue;
     }
 
-	CAM_sysfs_init();//add by cuirui for camera debug
     //spin_lock_init(&g_CamHWLock);
 
     PK_DBG("[CAMERA_HW] Attached!! \n");
@@ -1823,8 +1721,7 @@ static int CAMERA_HW_i2c_probe(struct i2c_client *client, const struct i2c_devic
 ********************************************************************************/
 static int CAMERA_HW_i2c_remove(struct i2c_client *client)
 {
-	CAM_sysfs_exit();//add by cuirui for camera debug
-	return 0;
+    return 0;
 }
 
 /*******************************************************************************

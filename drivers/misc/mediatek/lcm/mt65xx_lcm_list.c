@@ -203,29 +203,8 @@ extern LCM_DRIVER hx8282_a01_lvds_dpi_vdo_lcm_drv_txd;
 extern LCM_DRIVER hx8282_a01_lvds_dpi_vdo_lcm_drv_tpv3;
 extern LCM_DRIVER hx8282_a01_lvds_dpi_vdo_lcm_drv_kd;
 
-extern LCM_DRIVER nt51021_inx_dsi_vdo_kd_lcm_drv;
-extern LCM_DRIVER ota7290b_auo_dsi_vdo_kd_lcm_drv;
-extern LCM_DRIVER nt51021_inx_dsi_vdo_inx_lcm_drv;
-extern LCM_DRIVER nt51021_inx_dsi_vdo_txd_lcm_drv;
-
 LCM_DRIVER* lcm_driver_list[] = 
 {
-#if defined(NT51021_INX_DSI_VDO_KD)
-	&nt51021_inx_dsi_vdo_kd_lcm_drv,
-#endif
-
-#if defined(OTA7290B_AUO_DSI_VDO_KD)
-	&ota7290b_auo_dsi_vdo_kd_lcm_drv,
-#endif
-
-#if defined(NT51021_INX_DSI_VDO_INX)
-	&nt51021_inx_dsi_vdo_inx_lcm_drv,
-#endif
-
-#if defined(NT51021_INX_DSI_VDO_TXD)
-	&nt51021_inx_dsi_vdo_txd_lcm_drv,
-#endif
-
 #if defined(HX8282_A01_LVDS_DPI_VDO)
 	&hx8282_a01_lvds_dpi_vdo_lcm_drv,
 #endif

@@ -234,7 +234,6 @@
 #define OV9760MIPI_SENSOR_ID                    0x9760
 #define A5141MIPI_SENSOR_ID                     0x4800
 #define SP0A19_YUV_SENSOR_ID				0xA6
-#define SP2509MIPI_SENSOR_ID			0x2509
 #define A5142MIPI_SENSOR_ID                     0x4800
 #define GC0313MIPI_YUV_SENSOR_ID                0xD0
 #define IMX219_SENSOR_ID            			0x0219//0x0119//
@@ -246,10 +245,8 @@
 #define GC2355_SENSOR_ID			0x2355
 #define GC2355MIPI_SENSOR_ID                    0x2355
 #define GC2356MIPI_SENSOR_ID                    0x2356
-#define GC2355MIPI_SENSOR_ID_HUAQUAN            0x2355
 #define GC2035_SENSOR_ID			0x2035
 #define GC0312_SENSOR_ID			0xb310
-#define GC0312_SENSOR_ID_BLX			0xb310
 #define GC0329_SENSOR_ID			0xC0
 #define GC0330_SENSOR_ID			0xC1
 #define S5K4H5YX_2LANE_SENSOR_ID                0x485B
@@ -348,7 +345,6 @@
 #define SENSOR_DRVNAME_S5K3H2YX_MIPI_RAW   "s5k3h2yxmipiraw"
 #define SENSOR_DRVNAME_S5K2P8_MIPI_RAW   "s5k2p8mipiraw"
 #define SENSOR_DRVNAME_SP0A19_YUV   "sp0a19yuv"
-#define SENSOR_DRVNAME_SP2509_MIPI_RAW   "sp2509mipiraw"
 #define SENSOR_DRVNAME_IMX219_MIPI_RAW "imx219mipiraw"
 #define SENSOR_DRVNAME_IMX135_MIPI_RAW   "imx135mipiraw"
 #define SENSOR_DRVNAME_IMX214_MIPI_RAW   "imx214mipiraw"
@@ -363,7 +359,6 @@
 #define SENSOR_DRVNAME_GC2355_RAW           "gc2355raw"
 #define SENSOR_DRVNAME_GC2355_MIPI_RAW   "gc2355mipiraw"
 #define SENSOR_DRVNAME_GC2356_MIPI_RAW   "gc2355mipiraw_qunhui"
-#define SENSOR_DRVNAME_GC2355_MIPI_RAW_HUAQUAN   "gc2355mipiraw_huaquan"
 #define SENSOR_DRVNAME_OV8865_MIPI_RAW   "ov8865mipiraw"
 #define SENSOR_DRVNAME_HI551_MIPI_RAW   "hi551mipiraw"
 
@@ -373,7 +368,6 @@
 #define SENSOR_DRVNAME_OV13850_MIPI_RAW   "ov13850mipiraw"
 #define SENSOR_DRVNAME_T8EV5_YUV                "t8ev5_yuv"
 #define SENSOR_DRVNAME_GC0312_YUV   "gc0312yuv"
-#define SENSOR_DRVNAME_GC0312_YUV_BLX   "gc0312yuvblx"
 #define SENSOR_DRVNAME_GC0329_YUV   "gc0329yuv"
 #define SENSOR_DRVNAME_OV5645_MIPI_YUV "ov5645_mipi_yuv"
 #define SENSOR_DRVNAME_IMX132_MIPI_RAW   "imx132mipiraw"

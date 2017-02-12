@@ -2105,29 +2105,37 @@ scanAddToBssDesc (
             prBssDesc->ucPhyTypeSet |= PHY_TYPE_BIT_HT;
         }
 
-		/* check if support 11g */
-		if ((prBssDesc->u2OperationalRateSet & RATE_SET_OFDM) ||
-			prBssDesc->fgIsERPPresent) {
-			prBssDesc->ucPhyTypeSet |= PHY_TYPE_BIT_ERP;
-		}
+        /* if not 11n only */
+        /*if (!(prBssDesc->u2BSSBasicRateSet & RATE_SET_BIT_HT_PHY)) {*/
+            /* check if support 11g */
+            if ((prBssDesc->u2OperationalRateSet & RATE_SET_OFDM) ||
+                    prBssDesc->fgIsERPPresent) {
+                prBssDesc->ucPhyTypeSet |= PHY_TYPE_BIT_ERP;
+            }
 
-		/* if not 11g only */
-		if (!(prBssDesc->u2BSSBasicRateSet & RATE_SET_OFDM)) {
-			/* check if support 11b */
-			if ((prBssDesc->u2OperationalRateSet & RATE_SET_HR_DSSS)) {
-				prBssDesc->ucPhyTypeSet |= PHY_TYPE_BIT_HR_DSSS;
-			}
-		}
-	} else { /* (BAND_5G == prBssDesc->eBande) */
-		/* check if support 11n */
-		if (prBssDesc->fgIsHTPresent) {
-			prBssDesc->ucPhyTypeSet |= PHY_TYPE_BIT_HT;
-		}
+            /* if not 11g only */
+            if (!(prBssDesc->u2BSSBasicRateSet & RATE_SET_OFDM)) {
+                /* check if support 11b */
+                if ((prBssDesc->u2OperationalRateSet & RATE_SET_HR_DSSS)) {
+                    prBssDesc->ucPhyTypeSet |= PHY_TYPE_BIT_HR_DSSS;
+                }
+            }
+        /*}*/
+    }
+    else { /* (BAND_5G == prBssDesc->eBande) */
+        /* check if support 11n */
+        if (prBssDesc->fgIsHTPresent) {
+            prBssDesc->ucPhyTypeSet |= PHY_TYPE_BIT_HT;
+        }
 
-		/* Support 11a definitely */
-		prBssDesc->ucPhyTypeSet |= PHY_TYPE_BIT_OFDM;
-		ASSERT(!(prBssDesc->u2OperationalRateSet & RATE_SET_HR_DSSS));
-	}
+        /* if not 11n only */
+        if (!(prBssDesc->u2BSSBasicRateSet & RATE_SET_BIT_HT_PHY)) {
+            /* Support 11a definitely */
+            prBssDesc->ucPhyTypeSet |= PHY_TYPE_BIT_OFDM;
+
+            ASSERT(!(prBssDesc->u2OperationalRateSet & RATE_SET_HR_DSSS));
+        }
+    }
 
 
     //4 <6> Update BSS_DESC_T's Last Update TimeStamp.

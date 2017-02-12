@@ -904,12 +904,6 @@ config MTK_BQ24296_SUPPORT
 	  BQ24296 charger IC support Yes to support bq24296 No to not
 	  support bq24296
 
-config MTK_SN2871_SUPPORT
-        bool "MTK_SN2871_SUPPORT"
-        help
-          SN2871 charger IC support Yes to support sn2871 No to not
-          support sn2871
-
 config MTK_BQ27541_SUPPORT
 	bool "MTK_BQ27541_SUPPORT"
 	help
@@ -1099,14 +1093,6 @@ config MTK_BMA250
 
 config MTK_BMA253
 	bool "Accelerometer BMA253 for MediaTek package"
-	default n
-
-config MTK_MC3410
-	bool "Accelerometer MC3410 for MediaTek package"
-	default n
-
-config MTK_HALL_SENSOR
-	bool "HALL Sensor BU52013 for MediaTek Package"
 	default n
 
 config MTK_MPU6515A

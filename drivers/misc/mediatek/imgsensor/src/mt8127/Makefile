@@ -5,15 +5,8 @@ ifeq ($(ARCH_MTK_PROJECT), tb27A1910)
 obj-y				+= gc0312yuv_Sensor.o
 else
   ifeq ($(ARCH_MTK_PROJECT), ford)
-	ifeq ($(CONFIG_akx123_PROJECT), y)
-	  obj-y				+= sp2509mipiraw_Sensor.o
-	  obj-y				+= gc2355mipiraw_huaquan_Sensor.o
-	  obj-y				+= sp0a19yuv_Sensor.o
-	  obj-y				+= gc0312yuv_blx_Sensor.o
-	else
-	  obj-y				+= gc0312yuv_Sensor.o
-	  obj-y				+= hi704yuv_Sensor.o
-	endif
+  obj-y				+= gc0312yuv_Sensor.o
+  obj-y				+= hi704yuv_Sensor.o
   else
    ifeq ($(ARCH_MTK_PROJECT), tb27A1912)
      obj-y                         += gc0312yuv_Sensor.o
